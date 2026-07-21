@@ -1,0 +1,26 @@
+{
+  "fail_on_missing_trace": true,
+  "metric_profiles": {
+    "commerce_risk": [
+      "route_correctness",
+      "evidence_recall_at_5",
+      "supported_claim_rate",
+      "risk_label_correctness"
+    ],
+    "routing": [
+      "route_correctness"
+    ],
+    "technical_qa": [
+      "route_correctness",
+      "evidence_recall_at_5",
+      "supported_claim_rate"
+    ]
+  },
+  "metric_thresholds": {
+    "evidence_recall_at_5": 0.8,
+    "risk_label_correctness": 1.0,
+    "route_correctness": 0.8,
+    "supported_claim_rate": 0.8
+  }
+}
+
