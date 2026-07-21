@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "wikievalops"
 version = "0.1.0"
-description = "Trace-first evaluation harness for enterprise knowledge systems."
+description = "面向企业知识智能系统的全链路评测框架。"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = ["pydantic>=2.7,<3"]

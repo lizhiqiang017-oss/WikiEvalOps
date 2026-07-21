@@ -1,5 +1,5 @@
 class WikiEvalError(Exception):
-    """Base exception for expected WikiEvalOps failures."""
+    """WikiEvalOps 可预期业务异常的基类。"""
 
 
 class DatasetValidationError(WikiEvalError):
@@ -12,4 +12,3 @@ class TraceValidationError(WikiEvalError):
 
 class ConfigurationError(WikiEvalError):
     pass
-

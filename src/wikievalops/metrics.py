@@ -9,6 +9,8 @@ from .errors import ConfigurationError
 
 
 class Metric(ABC):
+    """单样本指标接口；新增指标时实现 evaluate 并注册即可。"""
+
     name: str
 
     @abstractmethod
@@ -17,10 +19,14 @@ class Metric(ABC):
 
 
 def _ratio(numerator: int, denominator: int, *, empty_score: float = 1.0) -> float:
+    """安全计算比例，并由调用方明确空集合的业务含义。"""
+
     return empty_score if denominator == 0 else numerator / denominator
 
 
 class RouteCorrectnessMetric(Metric):
+    """计算单条样本的多标签路由 F1，兼容多意图问题。"""
+
     name = "route_correctness"
 
     def evaluate(self, case: EvalCase, trace: EvaluationTrace) -> MetricResult:
@@ -43,6 +49,8 @@ class RouteCorrectnessMetric(Metric):
 
 
 class EvidenceRecallAt5Metric(Metric):
+    """检查回答所需的 Gold Evidence 是否进入检索结果前五名。"""
+
     name = "evidence_recall_at_5"
 
     def evaluate(self, case: EvalCase, trace: EvaluationTrace) -> MetricResult:
@@ -62,6 +70,8 @@ class EvidenceRecallAt5Metric(Metric):
 
 
 class SupportedClaimRateMetric(Metric):
+    """检查原子结论引用的证据是否完整存在于最终上下文。"""
+
     name = "supported_claim_rate"
 
     def evaluate(self, case: EvalCase, trace: EvaluationTrace) -> MetricResult:
@@ -87,6 +97,8 @@ class SupportedClaimRateMetric(Metric):
 
 
 class RiskLabelCorrectnessMetric(Metric):
+    """检查单条电商服务商风险分类是否命中 Gold Label。"""
+
     name = "risk_label_correctness"
 
     def evaluate(self, case: EvalCase, trace: EvaluationTrace) -> MetricResult:
@@ -110,6 +122,8 @@ DEFAULT_METRICS: tuple[Metric, ...] = (
 
 @dataclass(frozen=True)
 class MetricRegistry:
+    """集中管理可执行指标，防止配置中静默引用不存在的指标。"""
+
     metrics: dict[str, Metric]
 
     @classmethod
@@ -121,7 +135,6 @@ class MetricRegistry:
         for name in names:
             metric = self.metrics.get(name)
             if metric is None:
-                raise ConfigurationError(f"unknown metric: {name}")
+                raise ConfigurationError(f"未知指标：{name}")
             resolved.append(metric)
         return resolved
-

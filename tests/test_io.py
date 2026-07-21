@@ -19,5 +19,5 @@ def test_duplicate_case_ids_are_rejected(tmp_path):
     line = '{"case_id":"duplicate","task_type":"routing","metric_profile":"routing","input":{"query":"q"},"expected":{}}\n'
     path.write_text(line + line, encoding="utf-8")
 
-    with pytest.raises(DatasetValidationError, match="duplicate case_id"):
+    with pytest.raises(DatasetValidationError, match="case_id 重复"):
         load_cases(path)

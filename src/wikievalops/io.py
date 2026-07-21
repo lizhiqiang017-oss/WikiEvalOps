@@ -14,6 +14,8 @@ T = TypeVar("T", bound=BaseModel)
 
 
 def sha256_file(path: Path) -> str:
+    """流式计算文件摘要，支持未来扩展到较大的 Benchmark。"""
+
     digest = hashlib.sha256()
     with path.open("rb") as handle:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
@@ -27,8 +29,10 @@ def sha256_json(value: object) -> str:
 
 
 def _load_jsonl(path: Path, model_type: type[T], error_type: type[Exception]) -> list[T]:
+    """逐行校验 JSONL，并在错误中保留文件名和行号。"""
+
     if not path.is_file():
-        raise error_type(f"file does not exist: {path}")
+        raise error_type(f"文件不存在：{path}")
     rows: list[T] = []
     seen_ids: set[str] = set()
     with path.open("r", encoding="utf-8") as handle:
@@ -42,11 +46,11 @@ def _load_jsonl(path: Path, model_type: type[T], error_type: type[Exception]) ->
                 raise error_type(f"{path}:{line_number}: {exc}") from exc
             row_id = str(getattr(row, "case_id", ""))
             if row_id in seen_ids:
-                raise error_type(f"{path}:{line_number}: duplicate case_id {row_id!r}")
+                raise error_type(f"{path}:{line_number}: case_id 重复：{row_id!r}")
             seen_ids.add(row_id)
             rows.append(row)
     if not rows:
-        raise error_type(f"file contains no records: {path}")
+        raise error_type(f"文件中没有有效记录：{path}")
     return rows
 
 
@@ -60,6 +64,8 @@ def load_traces(path: Path) -> dict[str, EvaluationTrace]:
 
 
 def write_json(path: Path, value: BaseModel | dict) -> None:
+    """先写临时文件再原子替换，避免留下半份运行产物。"""
+
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = value.model_dump(mode="json") if isinstance(value, BaseModel) else value
     temporary = path.with_suffix(path.suffix + ".tmp")
@@ -77,4 +83,3 @@ def write_jsonl(path: Path, values: Iterable[BaseModel]) -> None:
         for value in values:
             handle.write(value.model_dump_json() + "\n")
     temporary.replace(path)
-

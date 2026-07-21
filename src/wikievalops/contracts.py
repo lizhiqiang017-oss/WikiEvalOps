@@ -8,6 +8,8 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class StrictModel(BaseModel):
+    """所有外部数据都禁止未知字段，尽早暴露协议漂移。"""
+
     model_config = ConfigDict(extra="forbid")
 
 
@@ -32,6 +34,8 @@ class ExpectedResult(StrictModel):
 
 
 class EvalCase(StrictModel):
+    """一条评测样本，描述输入、期望结果及应执行的指标配置。"""
+
     case_id: str = Field(pattern=r"^[a-zA-Z0-9][a-zA-Z0-9_.-]*$")
     task_type: str = Field(min_length=1)
     metric_profile: str = Field(min_length=1)
@@ -42,8 +46,10 @@ class EvalCase(StrictModel):
 
     @model_validator(mode="after")
     def validate_expectations(self) -> "EvalCase":
+        """校验任务特有约束，避免运行阶段才发现 Gold Label 缺失。"""
+
         if self.metric_profile == "commerce_risk" and self.expected.risk_label is None:
-            raise ValueError("commerce_risk cases require expected.risk_label")
+            raise ValueError("commerce_risk 样本必须提供 expected.risk_label")
         return self
 
 
@@ -94,6 +100,8 @@ class GenerationTrace(StrictModel):
 
 
 class EvaluationTrace(StrictModel):
+    """被测系统单次执行的标准 Trace，与具体 Agent/RAG 框架解耦。"""
+
     case_id: str
     system_version: str = Field(min_length=1)
     route: RouteTrace = Field(default_factory=RouteTrace)
@@ -133,8 +141,9 @@ class RunMetadata(StrictModel):
 
 
 class RunArtifact(StrictModel):
+    """一次评测运行的可复现产物，包含元数据、汇总和逐样本结果。"""
+
     schema_version: str = "1.0"
     metadata: RunMetadata
     summary: dict[str, Any]
     cases: list[CaseResult]
-

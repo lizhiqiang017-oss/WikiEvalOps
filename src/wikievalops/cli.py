@@ -13,18 +13,20 @@ from .io import load_cases, load_traces
 
 
 def _parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="wikieval", description="Evaluate normalized knowledge-system traces.")
+    """创建中文命令行界面，命令和参数名保留稳定的英文 API。"""
+
+    parser = argparse.ArgumentParser(prog="wikieval", description="评测企业知识系统的标准化执行 Trace。")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    validate = subparsers.add_parser("validate", help="Validate a JSONL benchmark or trace file.")
-    validate.add_argument("path", type=Path)
-    validate.add_argument("--kind", choices=("cases", "traces"), default="cases")
+    validate = subparsers.add_parser("validate", help="校验 JSONL Benchmark 或 Trace 文件。")
+    validate.add_argument("path", type=Path, help="待校验文件路径。")
+    validate.add_argument("--kind", choices=("cases", "traces"), default="cases", help="文件类型。")
 
-    run = subparsers.add_parser("run", help="Run a benchmark against offline traces.")
-    run.add_argument("--dataset", type=Path, required=True)
-    run.add_argument("--traces", type=Path, required=True)
-    run.add_argument("--config", type=Path, required=True)
-    run.add_argument("--output", type=Path, required=True)
+    run = subparsers.add_parser("run", help="使用离线 Trace 执行 Benchmark。")
+    run.add_argument("--dataset", type=Path, required=True, help="Benchmark JSONL 路径。")
+    run.add_argument("--traces", type=Path, required=True, help="离线 Trace JSONL 路径。")
+    run.add_argument("--config", type=Path, required=True, help="评测配置路径。")
+    run.add_argument("--output", type=Path, required=True, help="运行产物输出路径。")
     return parser
 
 
@@ -72,4 +74,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

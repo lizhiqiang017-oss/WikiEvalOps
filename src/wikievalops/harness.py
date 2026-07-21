@@ -14,6 +14,8 @@ from .metrics import MetricRegistry
 
 
 class EvaluationHarness:
+    """评测主执行器：按样本选择指标、聚合结果并落盘 Artifact。"""
+
     def __init__(
         self,
         config: EvaluationConfig,
@@ -29,13 +31,15 @@ class EvaluationHarness:
         dataset_path: Path,
         output_path: Path,
     ) -> RunArtifact:
+        """执行一次完整评测；同一次运行只允许包含一个系统版本。"""
+
         case_results: list[CaseResult] = []
         system_versions: set[str] = set()
 
         for case in cases:
             metric_names = self.config.metric_profiles.get(case.metric_profile)
             if metric_names is None:
-                raise ConfigurationError(f"unknown metric profile: {case.metric_profile}")
+                raise ConfigurationError(f"未知指标配置：{case.metric_profile}")
             trace = adapter.execute(case)
             if trace is None:
                 case_results.append(
@@ -45,7 +49,7 @@ class EvaluationHarness:
                         risk_level=case.risk_level,
                         metric_results=[],
                         trace_status="missing",
-                        errors=["trace not found"],
+                        errors=["未找到对应 Trace"],
                     )
                 )
                 continue
@@ -57,7 +61,7 @@ class EvaluationHarness:
                         risk_level=case.risk_level,
                         metric_results=[],
                         trace_status="invalid",
-                        errors=[f"trace case_id mismatch: {trace.case_id}"],
+                        errors=[f"Trace case_id 不匹配：{trace.case_id}"],
                     )
                 )
                 continue
@@ -80,7 +84,7 @@ class EvaluationHarness:
             )
 
         if len(system_versions) > 1:
-            raise ConfigurationError(f"one run cannot mix system versions: {sorted(system_versions)}")
+            raise ConfigurationError(f"一次运行不能混用多个系统版本：{sorted(system_versions)}")
         system_version = next(iter(system_versions), "unknown")
         artifact = RunArtifact(
             metadata=RunMetadata(
@@ -103,6 +107,8 @@ class EvaluationHarness:
         return f"{timestamp}-{uuid4().hex[:8]}"
 
     def _summarize(self, results: list[CaseResult]) -> dict:
+        """汇总指标均值、任务切片和失败样本，供报告和 CI 使用。"""
+
         metric_scores: dict[str, list[float]] = defaultdict(list)
         task_scores: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
         failed_cases: list[str] = []
@@ -145,6 +151,8 @@ class EvaluationHarness:
 
     @staticmethod
     def _core_metrics(results: list[CaseResult]) -> dict[str, dict[str, float | int]]:
+        """计算必须跨样本统计的核心指标，避免用单样本均值冒充聚合指标。"""
+
         route_labels: set[str] = set()
         route_rows: list[tuple[set[str], set[str]]] = []
         high_risk_total = 0
@@ -168,6 +176,7 @@ class EvaluationHarness:
         if route_labels:
             per_label_f1 = []
             for label in sorted(route_labels):
+                # 逐路由类别计算 F1 后取宏平均，避免大类掩盖小类退化。
                 true_positive = sum(label in expected and label in selected for expected, selected in route_rows)
                 false_positive = sum(label not in expected and label in selected for expected, selected in route_rows)
                 false_negative = sum(label in expected and label not in selected for expected, selected in route_rows)

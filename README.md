@@ -1,46 +1,45 @@
 # WikiEvalOps
 
-WikiEvalOps is a trace-first evaluation harness for enterprise knowledge systems. It evaluates normalized execution traces instead of depending on a specific RAG, agent, vector database, or memory implementation.
+WikiEvalOps 是一个面向企业知识智能系统的全链路评测框架。项目以标准化 Trace 为核心，不绑定具体的 RAG、Agent、向量数据库或记忆框架，因此既可以评测离线运行记录，也可以通过 Adapter 接入真实系统。
 
-This repository currently contains the first implementation slice:
+当前仓库完成了第一轮最小闭环：
 
-- strict, versionable contracts for benchmark cases and full-chain traces;
-- JSONL benchmark and offline-trace validation;
-- task-aware metric profiles;
-- deterministic routing, retrieval, claim-grounding, and commerce-risk metrics;
-- dataset-level route Macro-F1 and high-risk recall aggregation;
-- immutable run metadata and atomic JSON artifact writes;
-- a CLI and a twelve-case smoke benchmark;
-- unit and end-to-end tests that require no model API or external service.
+- 定义严格、可版本化的评测样本和全链路 Trace 数据契约；
+- 校验 JSONL Benchmark 与离线 Trace；
+- 根据任务类型选择对应指标，避免所有样本执行全部指标；
+- 实现路由、证据召回、结论证据支持率和电商风险判断等确定性指标；
+- 在数据集层聚合路由 Macro-F1 和高风险召回率；
+- 记录不可变运行元数据，并通过原子写入生成 JSON Artifact；
+- 提供 CLI、12 条冒烟样本以及不依赖模型 API 的测试。
 
-The demo data is synthetic and contains no company code, internal configuration, or production data.
+仓库内的电商数据均为合成数据，不包含任何公司代码、内部配置或生产数据。
 
-## Architecture
+## 项目架构
 
 ```text
-EvalCase JSONL                     Offline or live system
-      |                                      |
-      v                                      v
-Dataset validator                       Trace adapter
-      |                                      |
-      +------------------+-------------------+
-                         v
-                Evaluation harness
-                         |
-             task -> metric profile
-                         |
-          deterministic metric registry
-                         |
-         per-case results + run summary
-                         |
-                  JSON run artifact
+评测样本 EvalCase                    离线 Trace / 在线被测系统
+        |                                      |
+        v                                      v
+  数据集校验器                            Trace Adapter
+        |                                      |
+        +------------------+-------------------+
+                           v
+                    Evaluation Harness
+                           |
+                 任务类型 -> 指标配置
+                           |
+                    确定性指标注册表
+                           |
+                 单样本结果 + 聚合结果
+                           |
+                    JSON Run Artifact
 ```
 
-The six execution stages remain available in `EvaluationTrace` for later error attribution: route, retrieval, context, memory, generation, and operational timing/cost. The initial public metric surface is intentionally small.
+`EvaluationTrace` 保留路由、检索、上下文、记忆、生成以及耗时/成本等阶段信息，为后续阶段级错误归因提供数据基础。对外展示的核心指标保持精简，诊断信息附着在具体失败样本上。
 
-## Quick start
+## 快速开始
 
-Create a virtual environment, then install the project in editable mode:
+建议先创建虚拟环境，再以可编辑方式安装项目：
 
 ```powershell
 python -m venv .venv
@@ -48,16 +47,16 @@ python -m venv .venv
 python -m pip install -e ".[dev]"
 ```
 
-Validate the included benchmark and traces:
+校验内置 Benchmark 和 Trace：
 
 ```powershell
 wikieval validate benchmarks/smoke/cases.jsonl
 wikieval validate examples/traces/reference-v1.jsonl --kind traces
 ```
 
-For repository-only development without an editable install, use `PYTHONPATH=src` or run the test suite, which is already configured for the `src` layout.
+如果只进行仓库内开发、暂时不安装命令行入口，可以设置 `PYTHONPATH=src` 后使用模块方式运行。pytest 已在 `pyproject.toml` 中配置好 `src` 路径。
 
-Run the benchmark:
+执行冒烟评测：
 
 ```powershell
 wikieval run `
@@ -67,53 +66,68 @@ wikieval run `
   --output artifacts/runs/reference-v1.json
 ```
 
-The demo intentionally contains regressions, so `wikieval run` exits with code `2`. Exit codes are stable for CI integration:
+示例 `reference-v1` 故意包含回归问题，因此 `wikieval run` 会返回退出码 `2`。CLI 退出码可直接用于 CI：
 
-- `0`: evaluation completed and all configured thresholds passed;
-- `1`: invalid input or configuration;
-- `2`: evaluation completed but quality thresholds failed.
+- `0`：评测完成，全部阈值通过；
+- `1`：输入数据或配置无效；
+- `2`：评测完成，但至少一个质量阈值未通过。
 
-Run tests:
+运行测试：
 
 ```powershell
 python -m pytest
 ```
 
-## Data contracts
+## 数据契约
 
-An `EvalCase` stores task type, risk level, expected route, gold evidence, required claims, and optional risk label. An `EvaluationTrace` stores the observed route, retrieved documents, assembled context, memory reads/writes, atomic claims, citations, timing, cost, and runtime errors.
+`EvalCase` 表示一条评测样本，主要保存：
 
-Claims must explicitly identify supporting evidence. The deterministic `supported_claim_rate` counts a claim as supported only when it cites non-empty evidence and every cited evidence item exists in the assembled context. A later judge layer may assess semantic entailment, but it will not replace this structural check.
+- 任务类型与风险等级；
+- 用户问题及可选会话、业务数据；
+- 期望路由；
+- 回答所需的 Gold Evidence；
+- 必须包含的结论；
+- 可选的业务风险标签。
 
-## Metric model
+`EvaluationTrace` 表示被测系统对一条样本的完整执行记录，主要保存：
 
-Each case runs only the metrics selected by its `metric_profile`. The first slice includes:
+- 实际路由及置信度；
+- 检索文档及分数；
+- 最终组装的上下文；
+- 记忆读取和写入；
+- 原子结论、引用和结构化输出；
+- 各阶段耗时、成本和运行异常。
 
-- `route_correctness`: per-case multi-label route F1;
-- `evidence_recall_at_5`: fraction of gold evidence found in the first five retrieved documents;
-- `supported_claim_rate`: fraction of atomic claims structurally grounded in available context;
-- `risk_label_correctness`: per-case commerce risk classification correctness.
+所有结论都应显式声明对应的证据 ID。确定性指标 `supported_claim_rate` 只有在结论引用非空、并且所有引用都真实存在于最终上下文时，才将其视为“结构上有证据支持”。后续 LLM Judge 可以继续判断语义蕴含关系，但不能替代这项结构校验。
 
-The run summary additionally calculates dataset-level `route_macro_f1` and `high_risk_recall`. Diagnostic detail remains attached to each case instead of expanding the top-level dashboard with many secondary metrics.
+## 指标设计
 
-## Artifact reproducibility
+每条样本只运行其 `metric_profile` 指定的指标。第一轮包含：
 
-Every run records:
+- `route_correctness`：单样本多标签路由 F1；
+- `evidence_recall_at_5`：Gold Evidence 出现在前 5 个检索结果中的比例；
+- `supported_claim_rate`：具有有效上下文证据的原子结论比例；
+- `risk_label_correctness`：单条电商服务商风险标签是否正确。
 
-- UTC run identifier;
-- system version;
-- absolute dataset path;
-- SHA-256 digest of the benchmark;
-- SHA-256 digest of the effective evaluation configuration;
-- per-case scores and evidence;
-- aggregate metrics, task slices, failed cases, and missing traces.
+运行汇总还会计算数据集级 `route_macro_f1` 和 `high_risk_recall`。其余详细信息保留在单样本结果中，避免主看板堆积大量次要指标。
 
-Artifacts are written through a temporary file and atomically replaced to avoid partially written CI output.
+## Artifact 可复现性
 
-## Next implementation slices
+每次运行都会记录：
 
-1. Add baseline/candidate regression comparison and quality gates over confidence intervals.
-2. Add rule-first failure attribution for route, retrieval, context, memory, generation, and business decision failures.
-3. Build a lightweight reference pipeline with intentionally different v1/v2 behavior.
-4. Add public-source Wiki grounding cases and synthetic commerce recommendation/diagnosis cases.
-5. Add perturbation testing and benchmark challenge-set evolution after the deterministic core is stable.
+- UTC 运行 ID；
+- 被测系统版本；
+- Benchmark 的绝对路径和 SHA-256；
+- 生效配置的 SHA-256；
+- 单样本指标、阈值结果和诊断证据；
+- 聚合指标、任务切片、失败样本和缺失 Trace 数量。
+
+Artifact 先写入临时文件，再原子替换目标文件，避免 CI 中断时留下不完整的评测结果。
+
+## 后续实现计划
+
+1. 实现 Baseline/Candidate 版本对比与质量门禁。
+2. 实现规则优先的阶段级错误归因。
+3. 构建行为存在差异的 Reference Pipeline v1/v2。
+4. 增加基于开源代码的 Wiki Grounding 样本，以及合成电商推荐和诊断场景。
+5. 在确定性评测内核稳定后，增加故障注入、Mutation Testing 和 Challenge Set 持续演进。
