@@ -10,7 +10,8 @@ from .config import load_config
 from .errors import WikiEvalError
 from .harness import EvaluationHarness
 from .mutation import ChallengeSetBuilder
-from .io import load_artifact, load_cases, load_traces, write_json
+from .io import load_artifact, load_challenge_report, load_cases, load_traces, write_json
+from .reporting import MarkdownReporter
 from .regression import RegressionComparator
 
 
@@ -47,6 +48,11 @@ def _parser() -> argparse.ArgumentParser:
     mutate.add_argument("--dataset", type=Path, required=True, help="Benchmark JSONL 路径。")
     mutate.add_argument("--output", type=Path, required=True, help="挑战集 JSONL 输出路径。")
     mutate.add_argument("--report", type=Path, required=True, help="mutation 报告输出路径。")
+
+    report = subparsers.add_parser("report", help="把运行产物或挑战集报告导出为 Markdown。")
+    report.add_argument("--input", type=Path, required=True, help="输入 JSON 报告文件。")
+    report.add_argument("--kind", choices=("run", "challenge"), required=True, help="输入类型。")
+    report.add_argument("--output", type=Path, required=True, help="Markdown 输出路径。")
     return parser
 
 
@@ -152,6 +158,18 @@ def _mutate(args: argparse.Namespace) -> int:
     return 0
 
 
+def _report(args: argparse.Namespace) -> int:
+    reporter = MarkdownReporter()
+    if args.kind == "run":
+        report = reporter.render_run(load_artifact(args.input))
+    else:
+        report = reporter.render_challenge(load_challenge_report(args.input))
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_text(report.content + "\n", encoding="utf-8")
+    print(json.dumps({"status": "ok", "kind": args.kind, "output": str(args.output.resolve())}, ensure_ascii=False))
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     try:
@@ -163,6 +181,8 @@ def main(argv: list[str] | None = None) -> int:
             return _run_reference(args)
         if args.command == "mutate":
             return _mutate(args)
+        if args.command == "report":
+            return _report(args)
         return _compare(args)
     except WikiEvalError as exc:
         print(json.dumps({"status": "error", "error": str(exc)}, ensure_ascii=False), file=sys.stderr)

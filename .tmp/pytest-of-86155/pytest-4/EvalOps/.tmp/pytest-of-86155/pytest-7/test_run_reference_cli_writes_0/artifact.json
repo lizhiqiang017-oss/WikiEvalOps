@@ -34,11 +34,9 @@
     },
     {
       "attribution": {
-        "evidence": [
-          "期望路由=['commerce_risk', 'technical_qa']，实际路由=['commerce_risk']"
-        ],
-        "primary_failure": "route_mismatch",
-        "recommendation": "检查意图分类规则、多意图拆分和路由置信度阈值。",
+        "evidence": [],
+        "primary_failure": null,
+        "recommendation": null,
         "secondary_failures": []
       },
       "case_id": "route-002",
@@ -53,14 +51,15 @@
               "technical_qa"
             ],
             "precision": 1.0,
-            "recall": 0.5,
+            "recall": 1.0,
             "selected": [
-              "commerce_risk"
+              "commerce_risk",
+              "technical_qa"
             ]
           },
           "metric": "route_correctness",
-          "passed": false,
-          "score": 0.6666666666666666
+          "passed": true,
+          "score": 1.0
         }
       ],
       "risk_level": "medium",
@@ -158,15 +157,10 @@
     },
     {
       "attribution": {
-        "evidence": [
-          "Top-5 缺失证据=['fact:service-storage-edge']",
-          "无有效证据结论=['guess']"
-        ],
-        "primary_failure": "retrieval_miss",
-        "recommendation": "检查知识源索引、召回配置和查询改写策略。",
-        "secondary_failures": [
-          "unsupported_generation"
-        ]
+        "evidence": [],
+        "primary_failure": null,
+        "recommendation": null,
+        "secondary_failures": []
       },
       "case_id": "qa-002",
       "dataset_split": "smoke",
@@ -193,57 +187,57 @@
             "expected": [
               "fact:service-storage-edge"
             ],
-            "missing": [
-              "fact:service-storage-edge"
-            ],
+            "missing": [],
             "retrieved_top_5": [
-              "system:provider-score-flow"
+              "fact:service-storage-edge"
             ]
           },
           "metric": "evidence_recall_at_5",
-          "passed": false,
-          "score": 0.0
+          "passed": true,
+          "score": 1.0
         },
         {
           "details": {
             "available_evidence": [
-              "system:provider-score-flow"
+              "fact:service-storage-edge"
             ],
             "claim_count": 1,
-            "supported_claims": [],
-            "unsupported_claims": [
-              "guess"
-            ]
+            "supported_claims": [
+              "service-storage"
+            ],
+            "unsupported_claims": []
           },
           "metric": "supported_claim_rate",
-          "passed": false,
-          "score": 0.0
+          "passed": true,
+          "score": 1.0
         },
         {
           "details": {
-            "cited_ids": [],
+            "cited_ids": [
+              "fact:service-storage-edge"
+            ],
             "unverifiable_ids": [],
-            "verifiable_ids": []
+            "verifiable_ids": [
+              "fact:service-storage-edge"
+            ]
           },
           "metric": "citation_verifiability",
-          "passed": false,
-          "score": 0.0
+          "passed": true,
+          "score": 1.0
         },
         {
           "details": {
             "checked_evidence_ids": [
               "fact:service-storage-edge"
             ],
-            "missing_location_kinds": {
-              "fact:service-storage-edge": [
-                "line"
-              ]
-            },
-            "passed_evidence_ids": []
+            "missing_location_kinds": {},
+            "passed_evidence_ids": [
+              "fact:service-storage-edge"
+            ]
           },
           "metric": "evidence_location_coverage",
-          "passed": false,
-          "score": 0.0
+          "passed": true,
+          "score": 1.0
         }
       ],
       "risk_level": "medium",
@@ -301,10 +295,11 @@
               "metric:first-resolution",
               "metric:response-time"
             ],
-            "claim_count": 2,
+            "claim_count": 3,
             "supported_claims": [
               "complaint",
-              "resolution"
+              "resolution",
+              "response"
             ],
             "unsupported_claims": []
           },
@@ -396,10 +391,11 @@
               "metric:first-resolution",
               "metric:response-time"
             ],
-            "claim_count": 2,
+            "claim_count": 3,
             "supported_claims": [
               "complaint",
-              "resolution"
+              "resolution",
+              "response"
             ],
             "unsupported_claims": []
           },
@@ -442,11 +438,9 @@
     },
     {
       "attribution": {
-        "evidence": [
-          "期望风险=high，实际风险=medium"
-        ],
-        "primary_failure": "business_decision_error",
-        "recommendation": "检查风险阈值、边界样本和高风险零退化规则。",
+        "evidence": [],
+        "primary_failure": null,
+        "recommendation": null,
         "secondary_failures": []
       },
       "case_id": "risk-003",
@@ -493,10 +487,11 @@
               "metric:first-resolution",
               "metric:response-time"
             ],
-            "claim_count": 2,
+            "claim_count": 3,
             "supported_claims": [
               "complaint",
-              "resolution"
+              "resolution",
+              "response"
             ],
             "unsupported_claims": []
           },
@@ -506,23 +501,23 @@
         },
         {
           "details": {
-            "actual": "medium",
+            "actual": "high",
             "expected": "high"
           },
           "metric": "risk_label_correctness",
-          "passed": false,
-          "score": 0.0
+          "passed": true,
+          "score": 1.0
         },
         {
           "details": {
-            "failed_constraints": [
+            "failed_constraints": [],
+            "passed_constraints": [
               "high_risk_when_multi_bad_signal"
-            ],
-            "passed_constraints": []
+            ]
           },
           "metric": "business_constraint_accuracy",
-          "passed": false,
-          "score": 0.0
+          "passed": true,
+          "score": 1.0
         },
         {
           "details": {
@@ -804,10 +799,11 @@
               "metric:first-resolution",
               "metric:response-time"
             ],
-            "claim_count": 2,
+            "claim_count": 3,
             "supported_claims": [
               "complaint",
-              "resolution"
+              "resolution",
+              "response"
             ],
             "unsupported_claims": []
           },
@@ -900,10 +896,11 @@
               "metric:first-resolution",
               "metric:response-time"
             ],
-            "claim_count": 2,
+            "claim_count": 3,
             "supported_claims": [
               "complaint",
-              "resolution"
+              "resolution",
+              "response"
             ],
             "unsupported_claims": []
           },
@@ -922,16 +919,15 @@
         },
         {
           "details": {
-            "failed_constraints": [
-              "must_use_response_time"
-            ],
+            "failed_constraints": [],
             "passed_constraints": [
-              "high_risk_when_multi_bad_signal"
+              "high_risk_when_multi_bad_signal",
+              "must_use_response_time"
             ]
           },
           "metric": "business_constraint_accuracy",
-          "passed": false,
-          "score": 0.5
+          "passed": true,
+          "score": 1.0
         },
         {
           "details": {
@@ -1015,11 +1011,10 @@
           "details": {
             "actual_fields": [
               "entities",
-              "facts"
-            ],
-            "missing_fields": [
+              "facts",
               "source_evidence_ids"
             ],
+            "missing_fields": [],
             "required_fields": [
               "entities",
               "facts",
@@ -1027,8 +1022,8 @@
             ]
           },
           "metric": "wiki_structure_completeness",
-          "passed": false,
-          "score": 0.6666666666666666
+          "passed": true,
+          "score": 1.0
         },
         {
           "details": {
@@ -1093,26 +1088,25 @@
         {
           "details": {
             "cited_ids": [
-              "file:missing-policy"
+              "file:after-sale-policy"
             ],
-            "unverifiable_ids": [
-              "file:missing-policy"
-            ],
-            "verifiable_ids": []
+            "unverifiable_ids": [],
+            "verifiable_ids": [
+              "file:after-sale-policy"
+            ]
           },
           "metric": "citation_verifiability",
-          "passed": false,
-          "score": 0.0
+          "passed": true,
+          "score": 1.0
         },
         {
           "details": {
             "actual_fields": [
               "effective_rules",
+              "source_evidence_ids",
               "summary"
             ],
-            "missing_fields": [
-              "source_evidence_ids"
-            ],
+            "missing_fields": [],
             "required_fields": [
               "effective_rules",
               "source_evidence_ids",
@@ -1120,8 +1114,8 @@
             ]
           },
           "metric": "wiki_structure_completeness",
-          "passed": false,
-          "score": 0.6666666666666666
+          "passed": true,
+          "score": 1.0
         },
         {
           "details": {
@@ -1203,11 +1197,10 @@
             "actual_fields": [
               "edges",
               "nodes",
-              "risk_controls"
-            ],
-            "missing_fields": [
+              "risk_controls",
               "source_evidence_ids"
             ],
+            "missing_fields": [],
             "required_fields": [
               "edges",
               "nodes",
@@ -1216,8 +1209,8 @@
             ]
           },
           "metric": "wiki_structure_completeness",
-          "passed": false,
-          "score": 0.75
+          "passed": true,
+          "score": 1.0
         },
         {
           "details": {
@@ -1241,36 +1234,36 @@
   ],
   "metadata": {
     "case_count": 15,
-    "config_sha256": "3056d307de08a5f2a2f31b4804fcd0b10648b965937edda4fdbfca5ca9ff4705",
-    "created_at": "2026-07-22T07:02:40.587758Z",
+    "config_sha256": "037d63b266f65b84a15ca2c026c4f2696220bee13306dd0c2282e9efe8e305b3",
+    "created_at": "2026-07-22T07:27:39.989127Z",
     "dataset_path": "C:\\Users\\86155\\Desktop\\简历\\WikiEvalOps\\benchmarks\\smoke\\cases.jsonl",
     "dataset_sha256": "ba76501a07ad869054d8d60c2ef1785387ff761dba017bfea2823fc44554c9cd",
-    "run_id": "20260722T070240Z-5f58f128",
-    "system_version": "reference-v1",
-    "trace_path": null,
-    "trace_sha256": null
+    "run_id": "20260722T072739Z-444ad075",
+    "system_version": "reference-v2",
+    "trace_path": "C:\\Users\\86155\\Desktop\\简历\\WikiEvalOps\\.tmp\\pytest-of-86155\\pytest-7\\test_run_reference_cli_writes_0\\reference-v2.jsonl",
+    "trace_sha256": "abde489b339e9421a69cefd34b59eb80490d2dcdb57516f9da279459a621284e"
   },
   "schema_version": "1.2",
   "summary": {
     "core_metrics": {
       "high_risk_recall": {
         "positive_case_count": 3,
-        "score": 0.6666666666666666
+        "score": 1.0
       },
       "route_macro_f1": {
         "label_count": 5,
-        "score": 0.9818181818181818
+        "score": 1.0
       }
     },
     "dataset_split_slices": {
       "challenge": {
         "business_constraint_accuracy": {
           "count": 1,
-          "mean": 0.5
+          "mean": 1.0
         },
         "citation_verifiability": {
           "count": 2,
-          "mean": 0.5
+          "mean": 1.0
         },
         "evidence_location_coverage": {
           "count": 3,
@@ -1294,13 +1287,13 @@
         },
         "wiki_structure_completeness": {
           "count": 2,
-          "mean": 0.7083333333333333
+          "mean": 1.0
         }
       },
       "frozen_core": {
         "business_constraint_accuracy": {
           "count": 1,
-          "mean": 0.0
+          "mean": 1.0
         },
         "citation_verifiability": {
           "count": 1,
@@ -1316,7 +1309,7 @@
         },
         "risk_label_correctness": {
           "count": 1,
-          "mean": 0.0
+          "mean": 1.0
         },
         "route_correctness": {
           "count": 2,
@@ -1328,7 +1321,7 @@
         },
         "wiki_structure_completeness": {
           "count": 1,
-          "mean": 0.6666666666666666
+          "mean": 1.0
         }
       },
       "smoke": {
@@ -1338,15 +1331,15 @@
         },
         "citation_verifiability": {
           "count": 4,
-          "mean": 0.75
+          "mean": 1.0
         },
         "evidence_location_coverage": {
           "count": 7,
-          "mean": 0.8571428571428571
+          "mean": 1.0
         },
         "evidence_recall_at_5": {
           "count": 7,
-          "mean": 0.8571428571428571
+          "mean": 1.0
         },
         "risk_label_correctness": {
           "count": 3,
@@ -1354,11 +1347,11 @@
         },
         "route_correctness": {
           "count": 10,
-          "mean": 0.9666666666666666
+          "mean": 1.0
         },
         "supported_claim_rate": {
           "count": 7,
-          "mean": 0.8571428571428571
+          "mean": 1.0
         }
       }
     },
@@ -1367,9 +1360,9 @@
       "evaluated_trace_count": 15,
       "latency_ms": {
         "count": 15,
-        "mean": 0.18113999782751003,
-        "p50": 0.0475000124424696,
-        "p95": 1.91730004735291
+        "mean": 0.2833133252958457,
+        "p50": 0.04710000939667225,
+        "p95": 3.510699956677854
       },
       "usage": {
         "retrieval_call_count": {
@@ -1386,25 +1379,13 @@
         }
       }
     },
-    "failed_case_ids": [
-      "qa-002",
-      "risk-003",
-      "risk-005",
-      "route-002",
-      "wiki-fact-001",
-      "wiki-file-001",
-      "wiki-system-001"
-    ],
-    "failure_category_counts": {
-      "business_decision_error": 1,
-      "retrieval_miss": 1,
-      "route_mismatch": 1
-    },
+    "failed_case_ids": [],
+    "failure_category_counts": {},
     "knowledge_base_slices": {
       "commerce": {
         "business_constraint_accuracy": {
           "count": 2,
-          "mean": 0.25
+          "mean": 1.0
         },
         "evidence_location_coverage": {
           "count": 2,
@@ -1416,7 +1397,7 @@
         },
         "risk_label_correctness": {
           "count": 2,
-          "mean": 0.5
+          "mean": 1.0
         },
         "route_correctness": {
           "count": 2,
@@ -1434,15 +1415,15 @@
         },
         "citation_verifiability": {
           "count": 5,
-          "mean": 0.8
+          "mean": 1.0
         },
         "evidence_location_coverage": {
           "count": 8,
-          "mean": 0.875
+          "mean": 1.0
         },
         "evidence_recall_at_5": {
           "count": 8,
-          "mean": 0.875
+          "mean": 1.0
         },
         "risk_label_correctness": {
           "count": 3,
@@ -1450,21 +1431,21 @@
         },
         "route_correctness": {
           "count": 11,
-          "mean": 0.9696969696969696
+          "mean": 1.0
         },
         "supported_claim_rate": {
           "count": 7,
-          "mean": 0.8571428571428571
+          "mean": 1.0
         },
         "wiki_structure_completeness": {
           "count": 1,
-          "mean": 0.6666666666666666
+          "mean": 1.0
         }
       },
       "file_wiki": {
         "citation_verifiability": {
           "count": 1,
-          "mean": 0.0
+          "mean": 1.0
         },
         "evidence_location_coverage": {
           "count": 1,
@@ -1480,7 +1461,7 @@
         },
         "wiki_structure_completeness": {
           "count": 1,
-          "mean": 0.6666666666666666
+          "mean": 1.0
         }
       },
       "system_wiki": {
@@ -1502,63 +1483,112 @@
         },
         "wiki_structure_completeness": {
           "count": 1,
-          "mean": 0.75
+          "mean": 1.0
         }
       }
     },
     "metrics": {
       "business_constraint_accuracy": {
         "count": 5,
-        "mean": 0.7
+        "mean": 1.0
       },
       "citation_verifiability": {
         "count": 7,
-        "mean": 0.7142857142857143
+        "mean": 1.0
       },
       "evidence_location_coverage": {
         "count": 12,
-        "mean": 0.9166666666666666
+        "mean": 1.0
       },
       "evidence_recall_at_5": {
         "count": 12,
-        "mean": 0.9166666666666666
+        "mean": 1.0
       },
       "risk_label_correctness": {
         "count": 5,
-        "mean": 0.8
+        "mean": 1.0
       },
       "route_correctness": {
         "count": 15,
-        "mean": 0.9777777777777777
+        "mean": 1.0
       },
       "supported_claim_rate": {
         "count": 9,
-        "mean": 0.8888888888888888
+        "mean": 1.0
       },
       "wiki_structure_completeness": {
         "count": 3,
-        "mean": 0.6944444444444443
+        "mean": 1.0
       }
     },
     "missing_or_invalid_trace_count": 0,
     "quality_gate": {
       "checks": [
         {
-          "block_below": 0.7,
+          "block_below": 0.95,
+          "metric": "business_constraint_accuracy",
+          "score": 1.0,
+          "status": "PASS",
+          "warn_below": 1.0
+        },
+        {
+          "block_below": 0.95,
+          "metric": "citation_verifiability",
+          "score": 1.0,
+          "status": "PASS",
+          "warn_below": 1.0
+        },
+        {
+          "block_below": 0.95,
+          "metric": "evidence_location_coverage",
+          "score": 1.0,
+          "status": "PASS",
+          "warn_below": 1.0
+        },
+        {
+          "block_below": 0.9,
+          "metric": "evidence_recall_at_5",
+          "score": 1.0,
+          "status": "PASS",
+          "warn_below": 0.95
+        },
+        {
+          "block_below": 0.95,
+          "metric": "high_risk_recall",
+          "score": 1.0,
+          "status": "PASS",
+          "warn_below": 1.0
+        },
+        {
+          "block_below": 0.9,
           "metric": "route_macro_f1",
-          "score": 0.9818181818181818,
-          "status": "WARN",
-          "warn_below": 0.99
+          "score": 1.0,
+          "status": "PASS",
+          "warn_below": 0.95
+        },
+        {
+          "block_below": 0.9,
+          "metric": "supported_claim_rate",
+          "score": 1.0,
+          "status": "PASS",
+          "warn_below": 0.95
+        },
+        {
+          "block_below": 0.95,
+          "metric": "wiki_structure_completeness",
+          "score": 1.0,
+          "status": "PASS",
+          "warn_below": 1.0
         }
       ],
-      "status": "WARN"
+      "status": "PASS"
     },
-    "status": "WARN",
+    "status": "PASS",
     "task_slices": {
       "commerce_risk": {
         "business_constraint_accuracy": {
           "count": 5,
-          "mean": 0.7
+          "mean": 1.0
         },
         "evidence_location_coverage": {
           "count": 5,
@@ -1570,7 +1600,7 @@
         },
         "risk_label_correctness": {
           "count": 5,
-          "mean": 0.8
+          "mean": 1.0
         },
         "route_correctness": {
           "count": 5,
@@ -1600,13 +1630,13 @@
         },
         "wiki_structure_completeness": {
           "count": 1,
-          "mean": 0.6666666666666666
+          "mean": 1.0
         }
       },
       "file_wiki": {
         "citation_verifiability": {
           "count": 1,
-          "mean": 0.0
+          "mean": 1.0
         },
         "evidence_location_coverage": {
           "count": 1,
@@ -1622,13 +1652,13 @@
         },
         "wiki_structure_completeness": {
           "count": 1,
-          "mean": 0.6666666666666666
+          "mean": 1.0
         }
       },
       "routing": {
         "route_correctness": {
           "count": 3,
-          "mean": 0.8888888888888888
+          "mean": 1.0
         }
       },
       "system_wiki": {
@@ -1650,21 +1680,21 @@
         },
         "wiki_structure_completeness": {
           "count": 1,
-          "mean": 0.75
+          "mean": 1.0
         }
       },
       "technical_qa": {
         "citation_verifiability": {
           "count": 4,
-          "mean": 0.75
+          "mean": 1.0
         },
         "evidence_location_coverage": {
           "count": 4,
-          "mean": 0.75
+          "mean": 1.0
         },
         "evidence_recall_at_5": {
           "count": 4,
-          "mean": 0.75
+          "mean": 1.0
         },
         "route_correctness": {
           "count": 4,
@@ -1672,10 +1702,10 @@
         },
         "supported_claim_rate": {
           "count": 4,
-          "mean": 0.75
+          "mean": 1.0
         }
       }
     },
-    "threshold_failed_case_count": 7
+    "threshold_failed_case_count": 0
   }
 }

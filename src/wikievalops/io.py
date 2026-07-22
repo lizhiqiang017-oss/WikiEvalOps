@@ -7,7 +7,7 @@ from typing import Iterable, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
-from .contracts import EvalCase, EvaluationTrace, RunArtifact
+from .contracts import ChallengeSetReport, EvalCase, EvaluationTrace, RunArtifact
 from .errors import DatasetValidationError, TraceValidationError
 
 T = TypeVar("T", bound=BaseModel)
@@ -72,6 +72,17 @@ def load_artifact(path: Path) -> RunArtifact:
         return RunArtifact.model_validate_json(path.read_text(encoding="utf-8"))
     except (ValidationError, ValueError) as exc:
         raise TraceValidationError(f"Artifact 无效 {path}：{exc}") from exc
+
+
+def load_challenge_report(path: Path) -> ChallengeSetReport:
+    """读取并校验 challenge/mutation 报告。"""
+
+    if not path.is_file():
+        raise TraceValidationError(f"Challenge 报告不存在：{path}")
+    try:
+        return ChallengeSetReport.model_validate_json(path.read_text(encoding="utf-8"))
+    except (ValidationError, ValueError) as exc:
+        raise TraceValidationError(f"Challenge 报告无效 {path}：{exc}") from exc
 
 
 def write_json(path: Path, value: BaseModel | dict) -> None:

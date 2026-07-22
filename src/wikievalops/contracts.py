@@ -234,6 +234,14 @@ class ChallengeSetReport(StrictModel):
     records: list[MutationRecord] = Field(default_factory=list)
 
 
+class MarkdownReport(StrictModel):
+    """导出的中文 Markdown 报表，便于面试展示和人工审阅。"""
+
+    schema_version: str = "1.0"
+    title: str
+    content: str
+
+
 class MetricDelta(StrictModel):
     """Baseline 与 Candidate 在一个指标上的差值。"""
 

@@ -70,3 +70,43 @@ def test_mutate_cli_generates_challenge_set(project_root, tmp_path):
     assert len(challenge_cases) == 15
     assert all(case.dataset_split == "challenge" for case in challenge_cases)
     assert challenge_cases[0].case_id.startswith("challenge-")
+
+
+def test_report_cli_renders_run_markdown(project_root, tmp_path):
+    report_path = tmp_path / "run-report.md"
+    exit_code = main(
+        [
+            "report",
+            "--kind",
+            "run",
+            "--input",
+            str(project_root / "artifacts/runs/round5-reference-v2.json"),
+            "--output",
+            str(report_path),
+        ]
+    )
+
+    assert exit_code == 0
+    content = report_path.read_text(encoding="utf-8")
+    assert "# 运行报告：reference-v2" in content
+    assert "数据集分层切片" in content
+
+
+def test_report_cli_renders_challenge_markdown(project_root, tmp_path):
+    report_path = tmp_path / "challenge-report.md"
+    exit_code = main(
+        [
+            "report",
+            "--kind",
+            "challenge",
+            "--input",
+            str(project_root / "artifacts/challenges/round6-report.json"),
+            "--output",
+            str(report_path),
+        ]
+    )
+
+    assert exit_code == 0
+    content = report_path.read_text(encoding="utf-8")
+    assert "# 挑战集报告" in content
+    assert "变异类型" in content

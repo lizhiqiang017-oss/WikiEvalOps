@@ -215,6 +215,36 @@ wikieval mutate `
 
 挑战集不是为了把分数做高，而是为了把系统的脆弱点更快打出来。当前 reference-v1 和 reference-v2 在 challenge set 上都会触发 `BLOCK`，而 compare 结果是 `mixed`，说明这个扰动集确实能揭出不同系统的抗干扰差异。
 
+## 第七轮：Markdown 回归报表
+
+第七轮新增 `report` 命令，可以把运行产物或挑战集报告直接导出成中文 Markdown，方便面试展示和人工审阅。
+
+```powershell
+wikieval report `
+  --kind run `
+  --input artifacts/runs/round5-reference-v2.json `
+  --output artifacts/reports/round5-reference-v2.md
+
+wikieval report `
+  --kind challenge `
+  --input artifacts/challenges/round6-report.json `
+  --output artifacts/reports/round6-challenge.md
+```
+
+运行报表会展示：
+
+- 核心指标和门禁结果；
+- 数据集分层切片和知识底座切片；
+- 失败样本列表。
+
+挑战集报表会展示：
+
+- 源样本和挑战样本数量；
+- 变异类型分布；
+- 每条挑战样本的来源和扰动理由。
+
+这一轮的目标很简单：把系统的工程结果变成一页能看懂的中文报表，而不是只留在 JSON 里。
+
 ## 后续实现计划
 
 第二轮已经完成 Reference Pipeline v1/v2、规则优先的阶段级错误归因，以及 Baseline/Candidate 版本对比。
