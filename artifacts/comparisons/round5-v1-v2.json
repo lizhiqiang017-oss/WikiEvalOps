@@ -1,0 +1,77 @@
+{
+  "baseline_version": "reference-v1",
+  "candidate_version": "reference-v2",
+  "core_metric_deltas": {
+    "high_risk_recall": {
+      "baseline": 0.6666666666666666,
+      "candidate": 1.0,
+      "delta": 0.33333333333333337
+    },
+    "route_macro_f1": {
+      "baseline": 0.9818181818181818,
+      "candidate": 1.0,
+      "delta": 0.018181818181818188
+    }
+  },
+  "dataset_sha256": "ba76501a07ad869054d8d60c2ef1785387ff761dba017bfea2823fc44554c9cd",
+  "failure_category_deltas": {
+    "business_decision_error": -1,
+    "retrieval_miss": -1,
+    "route_mismatch": -1
+  },
+  "fixed_case_ids": [
+    "qa-002",
+    "risk-003",
+    "risk-005",
+    "route-002",
+    "wiki-fact-001",
+    "wiki-file-001",
+    "wiki-system-001"
+  ],
+  "metric_deltas": {
+    "business_constraint_accuracy": {
+      "baseline": 0.7,
+      "candidate": 1.0,
+      "delta": 0.30000000000000004
+    },
+    "citation_verifiability": {
+      "baseline": 0.7142857142857143,
+      "candidate": 1.0,
+      "delta": 0.2857142857142857
+    },
+    "evidence_location_coverage": {
+      "baseline": 0.9166666666666666,
+      "candidate": 1.0,
+      "delta": 0.08333333333333337
+    },
+    "evidence_recall_at_5": {
+      "baseline": 0.9166666666666666,
+      "candidate": 1.0,
+      "delta": 0.08333333333333337
+    },
+    "risk_label_correctness": {
+      "baseline": 0.8,
+      "candidate": 1.0,
+      "delta": 0.19999999999999996
+    },
+    "route_correctness": {
+      "baseline": 0.9777777777777777,
+      "candidate": 1.0,
+      "delta": 0.022222222222222254
+    },
+    "supported_claim_rate": {
+      "baseline": 0.8888888888888888,
+      "candidate": 1.0,
+      "delta": 0.11111111111111116
+    },
+    "wiki_structure_completeness": {
+      "baseline": 0.6944444444444443,
+      "candidate": 1.0,
+      "delta": 0.3055555555555557
+    }
+  },
+  "regressed_case_ids": [],
+  "schema_version": "1.0",
+  "unchanged_failed_case_ids": [],
+  "verdict": "improved"
+}

@@ -48,6 +48,7 @@ class EvalInput(StrictModel):
 class ExpectedResult(StrictModel):
     routes: list[str] = Field(default_factory=list)
     evidence_ids: list[str] = Field(default_factory=list)
+    required_evidence_locations: dict[str, list[str]] = Field(default_factory=dict)
     required_claims: list[str] = Field(default_factory=list)
     risk_label: str | None = None
     required_structured_fields: list[str] = Field(default_factory=list)
@@ -87,6 +88,7 @@ class RetrievedDocument(StrictModel):
     score: float | None = None
     source: str | None = None
     content: str = ""
+    locations: list["EvidenceLocation"] = Field(default_factory=list)
 
 
 class RetrievalTrace(StrictModel):
@@ -96,6 +98,7 @@ class RetrievalTrace(StrictModel):
 class ContextItem(StrictModel):
     evidence_id: str = Field(min_length=1)
     content: str = ""
+    locations: list["EvidenceLocation"] = Field(default_factory=list)
 
 
 class ContextTrace(StrictModel):
@@ -106,6 +109,13 @@ class ContextTrace(StrictModel):
 class MemoryTrace(StrictModel):
     read_items: list[str] = Field(default_factory=list)
     written_items: list[str] = Field(default_factory=list)
+
+
+class EvidenceLocation(StrictModel):
+    """证据在原始来源中的可复验位置，如页码、段落、代码行或业务字段路径。"""
+
+    kind: Literal["page", "paragraph", "line", "field_path"]
+    value: str = Field(min_length=1)
 
 
 class UsageTrace(StrictModel):
@@ -167,6 +177,8 @@ class FailureAttribution(StrictModel):
 class CaseResult(StrictModel):
     case_id: str
     task_type: str
+    dataset_split: DatasetSplit = DatasetSplit.SMOKE
+    knowledge_base_type: KnowledgeBaseType = KnowledgeBaseType.FACT_WIKI
     risk_level: RiskLevel
     metric_results: list[MetricResult]
     trace_status: Literal["ok", "missing", "invalid"] = "ok"
@@ -189,7 +201,7 @@ class RunMetadata(StrictModel):
 class RunArtifact(StrictModel):
     """一次评测运行的可复现产物，包含元数据、汇总和逐样本结果。"""
 
-    schema_version: str = "1.1"
+    schema_version: str = "1.2"
     metadata: RunMetadata
     summary: dict[str, Any]
     cases: list[CaseResult]

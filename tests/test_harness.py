@@ -29,6 +29,8 @@ def test_end_to_end_artifact_contains_core_metrics(project_root, tmp_path):
     assert artifact.summary["status"] == "BLOCK"
     assert artifact.summary["quality_gate"]["status"] == "BLOCK"
     assert "risk-003" in artifact.summary["failed_case_ids"]
+    assert "challenge" in artifact.summary["dataset_split_slices"]
+    assert "file_wiki" in artifact.summary["knowledge_base_slices"]
 
 
 def test_missing_trace_is_recorded(project_root, tmp_path):

@@ -203,6 +203,38 @@ class BusinessConstraintAccuracyMetric(Metric):
         return name, False
 
 
+class EvidenceLocationCoverageMetric(Metric):
+    """检查关键证据是否带有可定位信息，方便人工复验和审计回放。"""
+
+    name = "evidence_location_coverage"
+
+    def evaluate(self, case: EvalCase, trace: EvaluationTrace) -> MetricResult:
+        required = case.expected.required_evidence_locations
+        context_by_id = {item.evidence_id: item for item in trace.context.items}
+        passed: list[str] = []
+        failed: dict[str, list[str]] = {}
+
+        for evidence_id, required_kinds in required.items():
+            item = context_by_id.get(evidence_id)
+            actual_kinds = {location.kind for location in item.locations} if item else set()
+            missing_kinds = sorted(set(required_kinds) - actual_kinds)
+            if missing_kinds:
+                failed[evidence_id] = missing_kinds
+            else:
+                passed.append(evidence_id)
+
+        score = _ratio(len(passed), len(required), empty_score=1.0)
+        return MetricResult(
+            metric=self.name,
+            score=score,
+            details={
+                "checked_evidence_ids": sorted(required),
+                "passed_evidence_ids": sorted(passed),
+                "missing_location_kinds": failed,
+            },
+        )
+
+
 DEFAULT_METRICS: tuple[Metric, ...] = (
     RouteCorrectnessMetric(),
     EvidenceRecallAt5Metric(),
@@ -211,6 +243,7 @@ DEFAULT_METRICS: tuple[Metric, ...] = (
     CitationVerifiabilityMetric(),
     WikiStructureCompletenessMetric(),
     BusinessConstraintAccuracyMetric(),
+    EvidenceLocationCoverageMetric(),
 )
 
 

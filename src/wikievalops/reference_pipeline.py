@@ -8,6 +8,7 @@ from .contracts import (
     ContextItem,
     ContextTrace,
     EvalCase,
+    EvidenceLocation,
     EvaluationTrace,
     GenerationTrace,
     RetrievedDocument,
@@ -22,6 +23,7 @@ class KnowledgeDocument:
     document_id: str
     content: str
     keywords: tuple[str, ...]
+    locations: tuple[EvidenceLocation, ...]
 
 
 TECHNICAL_KNOWLEDGE = (
@@ -29,36 +31,46 @@ TECHNICAL_KNOWLEDGE = (
         "fact:repo-api",
         "repository.py 实现了 RepositoryAPI，负责仓储接口的数据访问。",
         ("仓储接口", "repository", "实现"),
+        (EvidenceLocation(kind="line", value="repository.py:12"),),
     ),
     KnowledgeDocument(
         "fact:service-storage-edge",
         "service.py 导入并调用 StorageClient。",
         ("服务模块", "服务层", "存储客户端", "StorageClient", "存储依赖"),
+        (EvidenceLocation(kind="line", value="service.py:28"),),
     ),
     KnowledgeDocument(
         "fact:storage-database-edge",
         "StorageClient 将数据写入数据库。",
         ("持久化", "数据库", "写入", "调用路径"),
+        (EvidenceLocation(kind="line", value="storage.py:41"),),
     ),
     KnowledgeDocument(
         "fact:unrelated",
         "controller.py 负责接收请求，不直接访问存储。",
         ("控制器", "请求"),
+        (EvidenceLocation(kind="line", value="controller.py:8"),),
     ),
     KnowledgeDocument(
         "file:after-sale-policy",
         "售后政策文件规定：签收后 7 天内可申请无理由退货，超期需走人工审核。",
         ("售后政策", "文件", "退货", "人工审核", "File Wiki"),
+        (
+            EvidenceLocation(kind="page", value="售后政策.pdf#page=3"),
+            EvidenceLocation(kind="paragraph", value="第 2.1 条"),
+        ),
     ),
     KnowledgeDocument(
         "system:ticket-risk-flow",
         "客服工单系统由 intake、risk_filter、manual_review 三个节点组成，高风险工单必须进入人工复核。",
         ("工单系统", "风险过滤", "人工复核", "System Wiki", "链路"),
+        (EvidenceLocation(kind="paragraph", value="工单系统设计.md#风险复核链路"),),
     ),
     KnowledgeDocument(
         "system:provider-score-flow",
         "服务商评分链路汇总投诉率、首次解决率、平均响应时间，并输出低/中/高三级风险。",
         ("服务商评分", "投诉率", "首次解决率", "平均响应时间", "System Wiki"),
+        (EvidenceLocation(kind="paragraph", value="服务商评分设计.md#指标汇总"),),
     ),
 )
 
@@ -79,7 +91,7 @@ class ReferencePipeline:
         routes = self._route(query)
         documents = self._retrieve(query, routes, case.input.business_data)
         context_items = [
-            ContextItem(evidence_id=document.document_id, content=document.content)
+            ContextItem(evidence_id=document.document_id, content=document.content, locations=document.locations)
             for document in documents
         ]
         generation = self._generate(query, routes, documents, case.input.business_data)
@@ -147,6 +159,7 @@ class ReferencePipeline:
                     content=document.content,
                     source="public-demo-repo",
                     score=min(1.0, score / 2),
+                    locations=list(document.locations),
                 )
                 for score, document in matched[:5]
             )
@@ -165,6 +178,7 @@ class ReferencePipeline:
                             content=f"{label}={business_data[field]}",
                             source="synthetic-commerce-data",
                             score=1.0,
+                            locations=[EvidenceLocation(kind="field_path", value=f"business_data.{field}")],
                         )
                     )
         # 同一证据只保留一次，模拟真实 Context 去重。

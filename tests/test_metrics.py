@@ -2,6 +2,7 @@ from wikievalops.contracts import EvalCase, EvaluationTrace
 from wikievalops.metrics import (
     BusinessConstraintAccuracyMetric,
     CitationVerifiabilityMetric,
+    EvidenceLocationCoverageMetric,
     EvidenceRecallAt5Metric,
     RouteCorrectnessMetric,
     SupportedClaimRateMetric,
@@ -131,3 +132,22 @@ def test_business_constraints_check_risk_reasoning():
     )
 
     assert result.score == 1.0
+
+
+def test_evidence_location_coverage_checks_required_location_kinds():
+    result = EvidenceLocationCoverageMetric().evaluate(
+        _case(required_evidence_locations={"file:policy": ["page", "paragraph"]}),
+        _trace(
+            context={
+                "items": [
+                    {
+                        "evidence_id": "file:policy",
+                        "locations": [{"kind": "page", "value": "policy.pdf#page=3"}],
+                    }
+                ]
+            }
+        ),
+    )
+
+    assert result.score == 0.0
+    assert result.details["missing_location_kinds"] == {"file:policy": ["paragraph"]}

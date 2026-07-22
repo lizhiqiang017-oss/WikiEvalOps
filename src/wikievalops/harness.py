@@ -52,6 +52,8 @@ class EvaluationHarness:
                     CaseResult(
                         case_id=case.case_id,
                         task_type=case.task_type,
+                        dataset_split=case.dataset_split,
+                        knowledge_base_type=case.knowledge_base_type,
                         risk_level=case.risk_level,
                         metric_results=[],
                         trace_status="missing",
@@ -66,6 +68,8 @@ class EvaluationHarness:
                     CaseResult(
                         case_id=case.case_id,
                         task_type=case.task_type,
+                        dataset_split=case.dataset_split,
+                        knowledge_base_type=case.knowledge_base_type,
                         risk_level=case.risk_level,
                         metric_results=[],
                         trace_status="invalid",
@@ -86,6 +90,8 @@ class EvaluationHarness:
                 CaseResult(
                     case_id=case.case_id,
                     task_type=case.task_type,
+                    dataset_split=case.dataset_split,
+                    knowledge_base_type=case.knowledge_base_type,
                     risk_level=case.risk_level,
                     metric_results=metric_results,
                     errors=list(trace.errors),
@@ -133,6 +139,8 @@ class EvaluationHarness:
 
         metric_scores: dict[str, list[float]] = defaultdict(list)
         task_scores: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
+        split_scores: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
+        knowledge_base_scores: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
         failed_cases: list[str] = []
         missing_traces = 0
         threshold_failed_cases = 0
@@ -151,6 +159,8 @@ class EvaluationHarness:
             for metric in case_result.metric_results:
                 metric_scores[metric.metric].append(metric.score)
                 task_scores[case_result.task_type][metric.metric].append(metric.score)
+                split_scores[str(case_result.dataset_split)][metric.metric].append(metric.score)
+                knowledge_base_scores[str(case_result.knowledge_base_type)][metric.metric].append(metric.score)
                 if metric.passed is False:
                     case_failed = True
             if case_failed:
@@ -168,16 +178,32 @@ class EvaluationHarness:
             }
             for task, metric_map in sorted(task_scores.items())
         }
+        split_slices = self._summarize_slices(split_scores)
+        knowledge_base_slices = self._summarize_slices(knowledge_base_scores)
         core_metrics = self._core_metrics(results)
         return {
             "metrics": metrics,
             "core_metrics": core_metrics,
             "task_slices": slices,
+            "dataset_split_slices": split_slices,
+            "knowledge_base_slices": knowledge_base_slices,
             "failed_case_ids": sorted(set(failed_cases)),
             "failure_category_counts": dict(sorted(failure_category_counts.items())),
             "missing_or_invalid_trace_count": missing_traces,
             "threshold_failed_case_count": threshold_failed_cases,
             "efficiency": self._efficiency_summary(traces),
+        }
+
+    @staticmethod
+    def _summarize_slices(scores_by_slice: dict[str, dict[str, list[float]]]) -> dict:
+        """把任意切片维度聚合成可直接写入 Artifact 的均值表。"""
+
+        return {
+            slice_name: {
+                metric: {"mean": sum(scores) / len(scores), "count": len(scores)}
+                for metric, scores in sorted(metric_map.items())
+            }
+            for slice_name, metric_map in sorted(scores_by_slice.items())
         }
 
     def _evaluate_quality_gates(self, summary: dict) -> dict:
