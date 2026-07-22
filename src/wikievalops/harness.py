@@ -6,6 +6,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from .adapters import SystemAdapter
+from .attribution import AttributionEngine
 from .config import EvaluationConfig
 from .contracts import CaseResult, EvalCase, RunArtifact, RunMetadata
 from .errors import ConfigurationError
@@ -20,9 +21,11 @@ class EvaluationHarness:
         self,
         config: EvaluationConfig,
         registry: MetricRegistry | None = None,
+        attribution_engine: AttributionEngine | None = None,
     ) -> None:
         self.config = config
         self.registry = registry or MetricRegistry.default()
+        self.attribution_engine = attribution_engine or AttributionEngine()
 
     def run(
         self,
@@ -50,6 +53,7 @@ class EvaluationHarness:
                         metric_results=[],
                         trace_status="missing",
                         errors=["未找到对应 Trace"],
+                        attribution=self.attribution_engine.analyze(case, None, [], "missing"),
                     )
                 )
                 continue
@@ -62,6 +66,7 @@ class EvaluationHarness:
                         metric_results=[],
                         trace_status="invalid",
                         errors=[f"Trace case_id 不匹配：{trace.case_id}"],
+                        attribution=self.attribution_engine.analyze(case, None, [], "invalid"),
                     )
                 )
                 continue
@@ -80,6 +85,7 @@ class EvaluationHarness:
                     risk_level=case.risk_level,
                     metric_results=metric_results,
                     errors=list(trace.errors),
+                    attribution=self.attribution_engine.analyze(case, trace, metric_results),
                 )
             )
 
@@ -113,12 +119,18 @@ class EvaluationHarness:
         task_scores: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
         failed_cases: list[str] = []
         missing_traces = 0
+        threshold_failed_cases = 0
+        failure_category_counts: dict[str, int] = defaultdict(int)
 
         for case_result in results:
             if case_result.trace_status != "ok":
                 missing_traces += 1
                 failed_cases.append(case_result.case_id)
+                if case_result.attribution.primary_failure:
+                    failure_category_counts[case_result.attribution.primary_failure] += 1
                 continue
+            if case_result.attribution.primary_failure:
+                failure_category_counts[case_result.attribution.primary_failure] += 1
             case_failed = False
             for metric in case_result.metric_results:
                 metric_scores[metric.metric].append(metric.score)
@@ -127,6 +139,7 @@ class EvaluationHarness:
                     case_failed = True
             if case_failed:
                 failed_cases.append(case_result.case_id)
+                threshold_failed_cases += 1
 
         metrics = {
             name: {"mean": sum(scores) / len(scores), "count": len(scores)}
@@ -141,11 +154,14 @@ class EvaluationHarness:
         }
         core_metrics = self._core_metrics(results)
         return {
-            "status": "failed" if failed_cases or (self.config.fail_on_missing_trace and missing_traces) else "passed",
+            "status": "failed"
+            if threshold_failed_cases or (self.config.fail_on_missing_trace and missing_traces)
+            else "passed",
             "metrics": metrics,
             "core_metrics": core_metrics,
             "task_slices": slices,
             "failed_case_ids": sorted(set(failed_cases)),
+            "failure_category_counts": dict(sorted(failure_category_counts.items())),
             "missing_or_invalid_trace_count": missing_traces,
         }
 

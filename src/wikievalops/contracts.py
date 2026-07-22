@@ -121,6 +121,15 @@ class MetricResult(StrictModel):
     details: dict[str, Any] = Field(default_factory=dict)
 
 
+class FailureAttribution(StrictModel):
+    """阶段级错误归因，保留主因、次因、判断证据和修复建议。"""
+
+    primary_failure: str | None = None
+    secondary_failures: list[str] = Field(default_factory=list)
+    evidence: list[str] = Field(default_factory=list)
+    recommendation: str | None = None
+
+
 class CaseResult(StrictModel):
     case_id: str
     task_type: str
@@ -128,6 +137,7 @@ class CaseResult(StrictModel):
     metric_results: list[MetricResult]
     trace_status: Literal["ok", "missing", "invalid"] = "ok"
     errors: list[str] = Field(default_factory=list)
+    attribution: FailureAttribution = Field(default_factory=FailureAttribution)
 
 
 class RunMetadata(StrictModel):
@@ -147,3 +157,27 @@ class RunArtifact(StrictModel):
     metadata: RunMetadata
     summary: dict[str, Any]
     cases: list[CaseResult]
+
+
+class MetricDelta(StrictModel):
+    """Baseline 与 Candidate 在一个指标上的差值。"""
+
+    baseline: float
+    candidate: float
+    delta: float
+
+
+class RegressionReport(StrictModel):
+    """两个系统版本在同一 Benchmark 上的对比报告。"""
+
+    schema_version: str = "1.0"
+    baseline_version: str
+    candidate_version: str
+    dataset_sha256: str
+    verdict: Literal["improved", "regressed", "mixed", "unchanged"]
+    core_metric_deltas: dict[str, MetricDelta]
+    metric_deltas: dict[str, MetricDelta]
+    fixed_case_ids: list[str]
+    regressed_case_ids: list[str]
+    unchanged_failed_case_ids: list[str]
+    failure_category_deltas: dict[str, int]

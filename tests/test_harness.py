@@ -46,3 +46,4 @@ def test_missing_trace_is_recorded(project_root, tmp_path):
     result = next(row for row in artifact.cases if row.case_id == "qa-003")
     assert result.trace_status == "missing"
     assert artifact.summary["missing_or_invalid_trace_count"] == 1
+    assert artifact.summary["failure_category_counts"]["trace_missing"] == 1

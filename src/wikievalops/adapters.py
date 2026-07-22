@@ -21,3 +21,16 @@ class OfflineTraceAdapter(SystemAdapter):
 
     def execute(self, case: EvalCase) -> EvaluationTrace | None:
         return self._traces.get(case.case_id)
+
+
+class ReferencePipelineAdapter(SystemAdapter):
+    """将可执行 ReferencePipeline 接入统一 EvaluationHarness。"""
+
+    def __init__(self, version: str) -> None:
+        # 延迟导入避免 Adapter 基础模块和演示系统形成初始化环依赖。
+        from .reference_pipeline import ReferencePipeline
+
+        self._pipeline = ReferencePipeline(version)
+
+    def execute(self, case: EvalCase) -> EvaluationTrace:
+        return self._pipeline.execute(case)

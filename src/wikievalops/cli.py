@@ -5,11 +5,12 @@ import json
 import sys
 from pathlib import Path
 
-from .adapters import OfflineTraceAdapter
+from .adapters import OfflineTraceAdapter, ReferencePipelineAdapter
 from .config import load_config
 from .errors import WikiEvalError
 from .harness import EvaluationHarness
-from .io import load_cases, load_traces
+from .io import load_artifact, load_cases, load_traces, write_json
+from .regression import RegressionComparator
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -27,6 +28,17 @@ def _parser() -> argparse.ArgumentParser:
     run.add_argument("--traces", type=Path, required=True, help="离线 Trace JSONL 路径。")
     run.add_argument("--config", type=Path, required=True, help="评测配置路径。")
     run.add_argument("--output", type=Path, required=True, help="运行产物输出路径。")
+
+    reference = subparsers.add_parser("run-reference", help="运行内置 ReferencePipeline。")
+    reference.add_argument("--dataset", type=Path, required=True, help="Benchmark JSONL 路径。")
+    reference.add_argument("--config", type=Path, required=True, help="评测配置路径。")
+    reference.add_argument("--version", choices=("reference-v1", "reference-v2"), required=True)
+    reference.add_argument("--output", type=Path, required=True, help="运行产物输出路径。")
+
+    compare = subparsers.add_parser("compare", help="比较 Baseline 与 Candidate Artifact。")
+    compare.add_argument("--baseline", type=Path, required=True)
+    compare.add_argument("--candidate", type=Path, required=True)
+    compare.add_argument("--output", type=Path, required=True)
     return parser
 
 
@@ -61,12 +73,59 @@ def _run(args: argparse.Namespace) -> int:
     return 0 if artifact.summary["status"] == "passed" else 2
 
 
+def _run_reference(args: argparse.Namespace) -> int:
+    cases = load_cases(args.dataset)
+    config = load_config(args.config)
+    artifact = EvaluationHarness(config).run(
+        cases=cases,
+        adapter=ReferencePipelineAdapter(args.version),
+        dataset_path=args.dataset,
+        output_path=args.output,
+    )
+    print(
+        json.dumps(
+            {
+                "status": artifact.summary["status"],
+                "system_version": artifact.metadata.system_version,
+                "artifact": str(args.output.resolve()),
+                "core_metrics": artifact.summary["core_metrics"],
+                "failure_categories": artifact.summary["failure_category_counts"],
+            },
+            ensure_ascii=False,
+        )
+    )
+    return 0 if artifact.summary["status"] == "passed" else 2
+
+
+def _compare(args: argparse.Namespace) -> int:
+    report = RegressionComparator().compare(load_artifact(args.baseline), load_artifact(args.candidate))
+    write_json(args.output, report)
+    print(
+        json.dumps(
+            {
+                "verdict": report.verdict,
+                "baseline": report.baseline_version,
+                "candidate": report.candidate_version,
+                "fixed_cases": report.fixed_case_ids,
+                "regressed_cases": report.regressed_case_ids,
+                "output": str(args.output.resolve()),
+            },
+            ensure_ascii=False,
+        )
+    )
+    return 3 if report.verdict in {"regressed", "mixed"} else 0
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     try:
         if args.command == "validate":
             return _validate(args)
-        return _run(args)
+        if args.command == "run":
+            return _run(args)
+        if args.command == "run-reference":
+            return _run_reference(args)
+        return _compare(args)
     except WikiEvalError as exc:
         print(json.dumps({"status": "error", "error": str(exc)}, ensure_ascii=False), file=sys.stderr)
         return 1
