@@ -1,0 +1,84 @@
+{
+  "baseline_version": "reference-v1",
+  "candidate_version": "reference-v2",
+  "core_metric_deltas": {
+    "high_risk_recall": {
+      "baseline": 0.6666666666666666,
+      "candidate": 1.0,
+      "delta": 0.33333333333333337
+    },
+    "route_macro_f1": {
+      "baseline": 0.7238095238095238,
+      "candidate": 0.652014652014652,
+      "delta": -0.07179487179487176
+    }
+  },
+  "dataset_sha256": "ed4829af86dd62a1b17f425f40f2d95d9da6604f46e8df96d3968f1753d28762",
+  "failure_category_deltas": {
+    "business_decision_error": -1,
+    "route_mismatch": 6
+  },
+  "fixed_case_ids": [
+    "challenge-route-002",
+    "challenge-wiki-system-001"
+  ],
+  "metric_deltas": {
+    "business_constraint_accuracy": {
+      "baseline": 0.7,
+      "candidate": 1.0,
+      "delta": 0.30000000000000004
+    },
+    "citation_verifiability": {
+      "baseline": 0.2857142857142857,
+      "candidate": 1.0,
+      "delta": 0.7142857142857143
+    },
+    "evidence_location_coverage": {
+      "baseline": 0.9166666666666666,
+      "candidate": 1.0,
+      "delta": 0.08333333333333337
+    },
+    "evidence_recall_at_5": {
+      "baseline": 0.9166666666666666,
+      "candidate": 1.0,
+      "delta": 0.08333333333333337
+    },
+    "risk_label_correctness": {
+      "baseline": 0.8,
+      "candidate": 1.0,
+      "delta": 0.19999999999999996
+    },
+    "route_correctness": {
+      "baseline": 0.711111111111111,
+      "candidate": 0.5777777777777777,
+      "delta": -0.1333333333333333
+    },
+    "supported_claim_rate": {
+      "baseline": 0.5555555555555556,
+      "candidate": 1.0,
+      "delta": 0.4444444444444444
+    },
+    "wiki_structure_completeness": {
+      "baseline": 0.6944444444444443,
+      "candidate": 1.0,
+      "delta": 0.3055555555555557
+    }
+  },
+  "regressed_case_ids": [
+    "challenge-risk-001",
+    "challenge-risk-002",
+    "challenge-risk-004"
+  ],
+  "schema_version": "1.0",
+  "unchanged_failed_case_ids": [
+    "challenge-qa-001",
+    "challenge-qa-002",
+    "challenge-qa-003",
+    "challenge-qa-004",
+    "challenge-risk-003",
+    "challenge-risk-005",
+    "challenge-wiki-fact-001",
+    "challenge-wiki-file-001"
+  ],
+  "verdict": "mixed"
+}

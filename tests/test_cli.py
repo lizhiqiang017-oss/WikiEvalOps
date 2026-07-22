@@ -1,5 +1,5 @@
 from wikievalops.cli import main
-from wikievalops.io import load_traces
+from wikievalops.io import load_cases, load_traces
 
 
 def test_validate_cli(project_root, capsys):
@@ -47,3 +47,26 @@ def test_run_reference_cli_writes_replayable_trace(project_root, tmp_path):
 
     assert exit_code == 0
     assert len(load_traces(trace_output)) == 15
+
+
+def test_mutate_cli_generates_challenge_set(project_root, tmp_path):
+    output = tmp_path / "challenge.jsonl"
+    report = tmp_path / "challenge-report.json"
+    exit_code = main(
+        [
+            "mutate",
+            "--dataset",
+            str(project_root / "benchmarks/smoke/cases.jsonl"),
+            "--output",
+            str(output),
+            "--report",
+            str(report),
+        ]
+    )
+
+    assert exit_code == 0
+    assert report.is_file()
+    challenge_cases = load_cases(output)
+    assert len(challenge_cases) == 15
+    assert all(case.dataset_split == "challenge" for case in challenge_cases)
+    assert challenge_cases[0].case_id.startswith("challenge-")

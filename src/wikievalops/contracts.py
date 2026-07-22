@@ -207,6 +207,33 @@ class RunArtifact(StrictModel):
     cases: list[CaseResult]
 
 
+class MutationRecord(StrictModel):
+    """记录一条挑战样本是从哪个样本、通过什么方式变异而来。"""
+
+    source_case_id: str
+    mutated_case_id: str
+    mutation_type: str
+    dataset_split: DatasetSplit
+    knowledge_base_type: KnowledgeBaseType
+    rationale: str
+
+
+class ChallengeSetReport(StrictModel):
+    """挑战集生成报告，便于回溯每条变异样本的来源和覆盖情况。"""
+
+    schema_version: str = "1.0"
+    source_dataset_path: str
+    source_dataset_sha256: str
+    output_dataset_path: str
+    output_dataset_sha256: str
+    source_case_count: int = Field(ge=0)
+    challenge_case_count: int = Field(ge=0)
+    skipped_case_count: int = Field(ge=0)
+    mutation_type_counts: dict[str, int] = Field(default_factory=dict)
+    split_counts: dict[str, int] = Field(default_factory=dict)
+    records: list[MutationRecord] = Field(default_factory=list)
+
+
 class MetricDelta(StrictModel):
     """Baseline 与 Candidate 在一个指标上的差值。"""
 

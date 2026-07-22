@@ -9,6 +9,7 @@ from .adapters import OfflineTraceAdapter, ReferencePipelineAdapter
 from .config import load_config
 from .errors import WikiEvalError
 from .harness import EvaluationHarness
+from .mutation import ChallengeSetBuilder
 from .io import load_artifact, load_cases, load_traces, write_json
 from .regression import RegressionComparator
 
@@ -41,6 +42,11 @@ def _parser() -> argparse.ArgumentParser:
     compare.add_argument("--baseline", type=Path, required=True)
     compare.add_argument("--candidate", type=Path, required=True)
     compare.add_argument("--output", type=Path, required=True)
+
+    mutate = subparsers.add_parser("mutate", help="生成挑战集和 mutation 报告。")
+    mutate.add_argument("--dataset", type=Path, required=True, help="Benchmark JSONL 路径。")
+    mutate.add_argument("--output", type=Path, required=True, help="挑战集 JSONL 输出路径。")
+    mutate.add_argument("--report", type=Path, required=True, help="mutation 报告输出路径。")
     return parser
 
 
@@ -122,6 +128,30 @@ def _compare(args: argparse.Namespace) -> int:
     return 3 if report.verdict in {"regressed", "mixed"} else 0
 
 
+def _mutate(args: argparse.Namespace) -> int:
+    cases = load_cases(args.dataset)
+    report = ChallengeSetBuilder().build(
+        cases=cases,
+        source_dataset_path=args.dataset,
+        output_dataset_path=args.output,
+        report_path=args.report,
+    )
+    print(
+        json.dumps(
+            {
+                "status": "ok",
+                "source_case_count": report.source_case_count,
+                "challenge_case_count": report.challenge_case_count,
+                "mutation_type_counts": report.mutation_type_counts,
+                "output": str(args.output.resolve()),
+                "report": str(args.report.resolve()),
+            },
+            ensure_ascii=False,
+        )
+    )
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     try:
@@ -131,6 +161,8 @@ def main(argv: list[str] | None = None) -> int:
             return _run(args)
         if args.command == "run-reference":
             return _run_reference(args)
+        if args.command == "mutate":
+            return _mutate(args)
         return _compare(args)
     except WikiEvalError as exc:
         print(json.dumps({"status": "error", "error": str(exc)}, ensure_ascii=False), file=sys.stderr)

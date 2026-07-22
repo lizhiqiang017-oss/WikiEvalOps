@@ -1,0 +1,143 @@
+{
+  "challenge_case_count": 15,
+  "mutation_type_counts": {
+    "business_distractor": 1,
+    "cross_domain_distractor": 1,
+    "generic_distractor": 3,
+    "policy_distractor": 4,
+    "technical_distractor": 5,
+    "workflow_distractor": 1
+  },
+  "output_dataset_path": "C:\\Users\\86155\\Desktop\\简历\\WikiEvalOps\\.tmp\\pytest-of-86155\\pytest-5\\test_mutate_cli_generates_chal0\\challenge.jsonl",
+  "output_dataset_sha256": "ed4829af86dd62a1b17f425f40f2d95d9da6604f46e8df96d3968f1753d28762",
+  "records": [
+    {
+      "dataset_split": "challenge",
+      "knowledge_base_type": "fact_wiki",
+      "mutated_case_id": "challenge-route-001",
+      "mutation_type": "generic_distractor",
+      "rationale": "保留原任务主线的同时增加无关干扰，作为基础挑战样本。",
+      "source_case_id": "route-001"
+    },
+    {
+      "dataset_split": "challenge",
+      "knowledge_base_type": "fact_wiki",
+      "mutated_case_id": "challenge-route-002",
+      "mutation_type": "generic_distractor",
+      "rationale": "保留原任务主线的同时增加无关干扰，作为基础挑战样本。",
+      "source_case_id": "route-002"
+    },
+    {
+      "dataset_split": "challenge",
+      "knowledge_base_type": "fact_wiki",
+      "mutated_case_id": "challenge-qa-001",
+      "mutation_type": "policy_distractor",
+      "rationale": "在技术问答中加入文件政策干扰，测试引用定位和路由稳定性。",
+      "source_case_id": "qa-001"
+    },
+    {
+      "dataset_split": "challenge",
+      "knowledge_base_type": "fact_wiki",
+      "mutated_case_id": "challenge-qa-002",
+      "mutation_type": "policy_distractor",
+      "rationale": "在技术问答中加入文件政策干扰，测试引用定位和路由稳定性。",
+      "source_case_id": "qa-002"
+    },
+    {
+      "dataset_split": "challenge",
+      "knowledge_base_type": "fact_wiki",
+      "mutated_case_id": "challenge-risk-001",
+      "mutation_type": "technical_distractor",
+      "rationale": "在业务风险判断中加入技术链路干扰，模拟真实问答里跨域追问导致的路由压力。",
+      "source_case_id": "risk-001"
+    },
+    {
+      "dataset_split": "challenge",
+      "knowledge_base_type": "fact_wiki",
+      "mutated_case_id": "challenge-risk-002",
+      "mutation_type": "technical_distractor",
+      "rationale": "在业务风险判断中加入技术链路干扰，模拟真实问答里跨域追问导致的路由压力。",
+      "source_case_id": "risk-002"
+    },
+    {
+      "dataset_split": "challenge",
+      "knowledge_base_type": "commerce",
+      "mutated_case_id": "challenge-risk-003",
+      "mutation_type": "technical_distractor",
+      "rationale": "在业务风险判断中加入技术链路干扰，模拟真实问答里跨域追问导致的路由压力。",
+      "source_case_id": "risk-003"
+    },
+    {
+      "dataset_split": "challenge",
+      "knowledge_base_type": "fact_wiki",
+      "mutated_case_id": "challenge-qa-003",
+      "mutation_type": "policy_distractor",
+      "rationale": "在技术问答中加入文件政策干扰，测试引用定位和路由稳定性。",
+      "source_case_id": "qa-003"
+    },
+    {
+      "dataset_split": "challenge",
+      "knowledge_base_type": "fact_wiki",
+      "mutated_case_id": "challenge-route-003",
+      "mutation_type": "generic_distractor",
+      "rationale": "保留原任务主线的同时增加无关干扰，作为基础挑战样本。",
+      "source_case_id": "route-003"
+    },
+    {
+      "dataset_split": "challenge",
+      "knowledge_base_type": "fact_wiki",
+      "mutated_case_id": "challenge-qa-004",
+      "mutation_type": "policy_distractor",
+      "rationale": "在技术问答中加入文件政策干扰，测试引用定位和路由稳定性。",
+      "source_case_id": "qa-004"
+    },
+    {
+      "dataset_split": "challenge",
+      "knowledge_base_type": "fact_wiki",
+      "mutated_case_id": "challenge-risk-004",
+      "mutation_type": "technical_distractor",
+      "rationale": "在业务风险判断中加入技术链路干扰，模拟真实问答里跨域追问导致的路由压力。",
+      "source_case_id": "risk-004"
+    },
+    {
+      "dataset_split": "challenge",
+      "knowledge_base_type": "commerce",
+      "mutated_case_id": "challenge-risk-005",
+      "mutation_type": "technical_distractor",
+      "rationale": "在业务风险判断中加入技术链路干扰，模拟真实问答里跨域追问导致的路由压力。",
+      "source_case_id": "risk-005"
+    },
+    {
+      "dataset_split": "challenge",
+      "knowledge_base_type": "fact_wiki",
+      "mutated_case_id": "challenge-wiki-fact-001",
+      "mutation_type": "cross_domain_distractor",
+      "rationale": "让事实抽取问题同时出现文件政策干扰，测试事实库路由的纯度。",
+      "source_case_id": "wiki-fact-001"
+    },
+    {
+      "dataset_split": "challenge",
+      "knowledge_base_type": "file_wiki",
+      "mutated_case_id": "challenge-wiki-file-001",
+      "mutation_type": "workflow_distractor",
+      "rationale": "把文件 Wiki 和系统 Wiki 语义混在一起，测试结构化文件归因能力。",
+      "source_case_id": "wiki-file-001"
+    },
+    {
+      "dataset_split": "challenge",
+      "knowledge_base_type": "system_wiki",
+      "mutated_case_id": "challenge-wiki-system-001",
+      "mutation_type": "business_distractor",
+      "rationale": "把系统链路问题和业务风险判断混在一起，测试多意图路由和结构输出。",
+      "source_case_id": "wiki-system-001"
+    }
+  ],
+  "schema_version": "1.0",
+  "skipped_case_count": 0,
+  "source_case_count": 15,
+  "source_dataset_path": "C:\\Users\\86155\\Desktop\\简历\\WikiEvalOps\\benchmarks\\smoke\\cases.jsonl",
+  "source_dataset_sha256": "ba76501a07ad869054d8d60c2ef1785387ff761dba017bfea2823fc44554c9cd",
+  "split_counts": {
+    "challenge": 15
+  }
+}
