@@ -64,18 +64,18 @@ def test_reference_trace_is_recorded_with_digest_and_efficiency(project_root, tm
     )
 
     assert artifact.summary["status"] == "PASS"
-    assert len(load_traces(trace_output)) == 12
+    assert len(load_traces(trace_output)) == 15
     assert artifact.metadata.trace_path == str(trace_output.resolve())
     assert artifact.metadata.trace_sha256
-    assert artifact.summary["efficiency"]["latency_ms"]["count"] == 12
-    assert artifact.summary["efficiency"]["usage"]["retrieval_call_count"]["total"] == 12
+    assert artifact.summary["efficiency"]["latency_ms"]["count"] == 15
+    assert artifact.summary["efficiency"]["usage"]["retrieval_call_count"]["total"] == 15
 
 
 def test_warning_gate_does_not_block_run(project_root, tmp_path):
     dataset = project_root / "benchmarks/smoke/cases.jsonl"
     config = load_config(project_root / "configs/evaluation.json")
     config.quality_gates = {
-        "route_macro_f1": QualityGateRule(warn_below=0.97, block_below=0.90),
+        "route_macro_f1": QualityGateRule(warn_below=0.99, block_below=0.70),
     }
 
     artifact = EvaluationHarness(config).run(

@@ -10,7 +10,7 @@ def test_smoke_data_is_valid(project_root):
     cases = load_cases(project_root / "benchmarks/smoke/cases.jsonl")
     traces = load_traces(project_root / "examples/traces/reference-v1.jsonl")
 
-    assert len(cases) == 12
+    assert len(cases) == 15
     assert set(traces) == {case.case_id for case in cases}
 
 

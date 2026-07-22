@@ -5,24 +5,55 @@
       "route_correctness",
       "evidence_recall_at_5",
       "supported_claim_rate",
-      "risk_label_correctness"
+      "risk_label_correctness",
+      "business_constraint_accuracy"
+    ],
+    "fact_wiki": [
+      "route_correctness",
+      "evidence_recall_at_5",
+      "citation_verifiability",
+      "wiki_structure_completeness"
+    ],
+    "file_wiki": [
+      "route_correctness",
+      "evidence_recall_at_5",
+      "citation_verifiability",
+      "wiki_structure_completeness"
     ],
     "routing": [
       "route_correctness"
     ],
+    "system_wiki": [
+      "route_correctness",
+      "evidence_recall_at_5",
+      "citation_verifiability",
+      "wiki_structure_completeness"
+    ],
     "technical_qa": [
       "route_correctness",
       "evidence_recall_at_5",
-      "supported_claim_rate"
+      "supported_claim_rate",
+      "citation_verifiability"
     ]
   },
   "metric_thresholds": {
+    "business_constraint_accuracy": 1.0,
+    "citation_verifiability": 1.0,
     "evidence_recall_at_5": 0.8,
     "risk_label_correctness": 1.0,
     "route_correctness": 0.8,
-    "supported_claim_rate": 0.8
+    "supported_claim_rate": 0.8,
+    "wiki_structure_completeness": 1.0
   },
   "quality_gates": {
+    "business_constraint_accuracy": {
+      "block_below": 0.95,
+      "warn_below": 1.0
+    },
+    "citation_verifiability": {
+      "block_below": 0.95,
+      "warn_below": 1.0
+    },
     "evidence_recall_at_5": {
       "block_below": 0.9,
       "warn_below": 0.95
@@ -38,6 +69,10 @@
     "supported_claim_rate": {
       "block_below": 0.9,
       "warn_below": 0.95
+    },
+    "wiki_structure_completeness": {
+      "block_below": 0.95,
+      "warn_below": 1.0
     }
   }
 }

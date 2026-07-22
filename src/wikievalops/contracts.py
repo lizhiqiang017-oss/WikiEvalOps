@@ -20,6 +20,25 @@ class RiskLevel(StrEnum):
     CRITICAL = "critical"
 
 
+class DatasetSplit(StrEnum):
+    """样本分层用于区分稳定回归集、挑战集和只在最终验收使用的留出集。"""
+
+    SMOKE = "smoke"
+    FROZEN_CORE = "frozen_core"
+    CHALLENGE = "challenge"
+    HOLDOUT = "holdout"
+
+
+class KnowledgeBaseType(StrEnum):
+    """业务上常见的知识底座类型，便于后续按 Wiki 来源做切片分析。"""
+
+    FACT_WIKI = "fact_wiki"
+    FILE_WIKI = "file_wiki"
+    SYSTEM_WIKI = "system_wiki"
+    COMMERCE = "commerce"
+    MIXED = "mixed"
+
+
 class EvalInput(StrictModel):
     query: str = Field(min_length=1)
     conversation: list[dict[str, Any]] = Field(default_factory=list)
@@ -31,6 +50,8 @@ class ExpectedResult(StrictModel):
     evidence_ids: list[str] = Field(default_factory=list)
     required_claims: list[str] = Field(default_factory=list)
     risk_label: str | None = None
+    required_structured_fields: list[str] = Field(default_factory=list)
+    business_constraints: list[str] = Field(default_factory=list)
 
 
 class EvalCase(StrictModel):
@@ -39,6 +60,8 @@ class EvalCase(StrictModel):
     case_id: str = Field(pattern=r"^[a-zA-Z0-9][a-zA-Z0-9_.-]*$")
     task_type: str = Field(min_length=1)
     metric_profile: str = Field(min_length=1)
+    dataset_split: DatasetSplit = DatasetSplit.SMOKE
+    knowledge_base_type: KnowledgeBaseType = KnowledgeBaseType.FACT_WIKI
     risk_level: RiskLevel = RiskLevel.LOW
     tags: list[str] = Field(default_factory=list)
     input: EvalInput

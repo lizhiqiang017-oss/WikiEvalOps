@@ -112,11 +112,105 @@ class RiskLabelCorrectnessMetric(Metric):
         )
 
 
+class CitationVerifiabilityMetric(Metric):
+    """检查输出引用是否都能在本次 Trace 的最终上下文中复验。"""
+
+    name = "citation_verifiability"
+
+    def evaluate(self, case: EvalCase, trace: EvaluationTrace) -> MetricResult:
+        context_ids = {item.evidence_id for item in trace.context.items}
+        cited_ids = set(trace.generation.citations)
+        for claim in trace.generation.claims:
+            cited_ids.update(claim.evidence_ids)
+        valid_ids = cited_ids & context_ids
+        score = _ratio(len(valid_ids), len(cited_ids), empty_score=0.0)
+        return MetricResult(
+            metric=self.name,
+            score=score,
+            details={
+                "cited_ids": sorted(cited_ids),
+                "verifiable_ids": sorted(valid_ids),
+                "unverifiable_ids": sorted(cited_ids - context_ids),
+            },
+        )
+
+
+class WikiStructureCompletenessMetric(Metric):
+    """检查 Wiki 生成任务是否产出预期结构字段，而不是只给一段散文答案。"""
+
+    name = "wiki_structure_completeness"
+
+    def evaluate(self, case: EvalCase, trace: EvaluationTrace) -> MetricResult:
+        required = set(case.expected.required_structured_fields)
+        actual = set(trace.generation.structured_output)
+        matched = required & actual
+        score = _ratio(len(matched), len(required), empty_score=1.0)
+        return MetricResult(
+            metric=self.name,
+            score=score,
+            details={
+                "required_fields": sorted(required),
+                "actual_fields": sorted(actual),
+                "missing_fields": sorted(required - actual),
+            },
+        )
+
+
+class BusinessConstraintAccuracyMetric(Metric):
+    """用可解释业务规则检查电商决策，避免只看风险标签是否碰巧正确。"""
+
+    name = "business_constraint_accuracy"
+
+    def evaluate(self, case: EvalCase, trace: EvaluationTrace) -> MetricResult:
+        results = [
+            self._check_constraint(name, case.input.business_data, trace)
+            for name in case.expected.business_constraints
+        ]
+        passed = [name for name, ok in results if ok]
+        failed = [name for name, ok in results if not ok]
+        score = _ratio(len(passed), len(results), empty_score=1.0)
+        return MetricResult(
+            metric=self.name,
+            score=score,
+            details={"passed_constraints": passed, "failed_constraints": failed},
+        )
+
+    @staticmethod
+    def _check_constraint(name: str, data: dict, trace: EvaluationTrace) -> tuple[str, bool]:
+        complaint = float(data.get("complaint_rate", 0))
+        resolution = float(data.get("first_resolution_rate", 1))
+        response = float(data.get("avg_response_seconds", 0))
+        claim_evidence = {
+            evidence_id
+            for claim in trace.generation.claims
+            for evidence_id in claim.evidence_ids
+        }
+        risk_label = trace.generation.risk_label
+
+        if name == "high_risk_when_multi_bad_signal":
+            bad_signal_count = sum((complaint >= 0.15, resolution <= 0.60, response >= 70))
+            return name, bad_signal_count >= 2 and risk_label == "high"
+        if name == "low_risk_when_all_healthy":
+            is_healthy = complaint < 0.03 and resolution >= 0.85 and response <= 30
+            return name, is_healthy and risk_label == "low"
+        if name == "medium_risk_when_mixed_signal":
+            is_mixed = complaint >= 0.05 or resolution < 0.80 or response > 40
+            is_high = sum((complaint >= 0.15, resolution <= 0.60, response >= 70)) >= 2
+            is_low = complaint < 0.03 and resolution >= 0.85 and response <= 30
+            return name, is_mixed and not is_high and not is_low and risk_label == "medium"
+        if name == "must_use_response_time":
+            return name, "metric:response-time" in claim_evidence
+        return name, False
+
+
 DEFAULT_METRICS: tuple[Metric, ...] = (
     RouteCorrectnessMetric(),
     EvidenceRecallAt5Metric(),
     SupportedClaimRateMetric(),
     RiskLabelCorrectnessMetric(),
+    CitationVerifiabilityMetric(),
+    WikiStructureCompletenessMetric(),
+    BusinessConstraintAccuracyMetric(),
 )
 
 
