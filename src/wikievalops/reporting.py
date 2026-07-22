@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from .contracts import ChallengeSetReport, MarkdownReport, RunArtifact
+from .contracts import ChallengeSetReport, MarkdownReport, RegressionReport, RunArtifact
 
 
 class MarkdownReporter:
@@ -62,6 +62,45 @@ class MarkdownReporter:
                 f"- {record.mutated_case_id} ← {record.source_case_id} | {record.mutation_type} | {record.rationale}"
             )
         return MarkdownReport(title="挑战集报告", content="\n".join(lines))
+
+    def render_regression(self, report: RegressionReport) -> MarkdownReport:
+        lines = [
+            f"# 对比报告：{report.baseline_version} → {report.candidate_version}",
+            "",
+            f"- 结论：{report.verdict}",
+            f"- 数据集 SHA-256：{report.dataset_sha256}",
+            "",
+            "## 核心指标变化",
+        ]
+        for name, delta in sorted(report.core_metric_deltas.items()):
+            lines.append(f"- {name}：{delta.baseline:.4f} → {delta.candidate:.4f}（{delta.delta:+.4f}）")
+
+        lines.append("")
+        lines.append("## 常规指标变化")
+        if report.metric_deltas:
+            for name, delta in sorted(report.metric_deltas.items()):
+                lines.append(f"- {name}：{delta.baseline:.4f} → {delta.candidate:.4f}（{delta.delta:+.4f}）")
+        else:
+            lines.append("- 无")
+
+        lines.extend(
+            [
+                "",
+                "## 样本变化",
+                f"- 修复样本：{', '.join(report.fixed_case_ids) if report.fixed_case_ids else '无'}",
+                f"- 退化样本：{', '.join(report.regressed_case_ids) if report.regressed_case_ids else '无'}",
+                f"- 持续失败样本：{', '.join(report.unchanged_failed_case_ids) if report.unchanged_failed_case_ids else '无'}",
+                "",
+                "## 失败类别变化",
+            ]
+        )
+        if report.failure_category_deltas:
+            for name, delta in sorted(report.failure_category_deltas.items()):
+                lines.append(f"- {name}：{delta:+d}")
+        else:
+            lines.append("- 无")
+
+        return MarkdownReport(title=f"对比报告：{report.baseline_version} → {report.candidate_version}", content="\n".join(lines))
 
     @staticmethod
     def _append_slice_block(lines: list[str], title: str, slices: dict) -> None:

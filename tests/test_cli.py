@@ -110,3 +110,24 @@ def test_report_cli_renders_challenge_markdown(project_root, tmp_path):
     content = report_path.read_text(encoding="utf-8")
     assert "# 挑战集报告" in content
     assert "变异类型" in content
+
+
+def test_report_cli_renders_regression_markdown(project_root, tmp_path):
+    report_path = tmp_path / "regression-report.md"
+    exit_code = main(
+        [
+            "report",
+            "--kind",
+            "regression",
+            "--input",
+            str(project_root / "artifacts/comparisons/round6-challenge-v1-v2.json"),
+            "--output",
+            str(report_path),
+        ]
+    )
+
+    assert exit_code == 0
+    content = report_path.read_text(encoding="utf-8")
+    assert "# 对比报告：" in content
+    assert "核心指标变化" in content
+    assert "退化样本" in content

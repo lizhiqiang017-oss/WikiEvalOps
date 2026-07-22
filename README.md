@@ -245,6 +245,25 @@ wikieval report `
 
 这一轮的目标很简单：把系统的工程结果变成一页能看懂的中文报表，而不是只留在 JSON 里。
 
+## 第八轮：版本对比 Markdown
+
+第八轮把 `compare` 结果也纳入 Markdown 导出。你可以直接把 Baseline / Candidate 的差异整理成中文总结，便于在面试中解释“修复了什么、还退化了什么”。
+
+```powershell
+wikieval report `
+  --kind regression `
+  --input artifacts/comparisons/round6-challenge-v1-v2.json `
+  --output artifacts/reports/round8-regression.md
+```
+
+版本对比报表会展示：
+
+- 核心指标和常规指标的变化；
+- 修复样本、退化样本和持续失败样本；
+- 失败类别的变化。
+
+这样就把评测、挑战集、版本对比三条线都收口到了统一的中文报表出口。
+
 ## 后续实现计划
 
 第二轮已经完成 Reference Pipeline v1/v2、规则优先的阶段级错误归因，以及 Baseline/Candidate 版本对比。

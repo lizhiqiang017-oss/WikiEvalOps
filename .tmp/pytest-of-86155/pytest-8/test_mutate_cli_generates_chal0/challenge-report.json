@@ -8,7 +8,7 @@
     "technical_distractor": 5,
     "workflow_distractor": 1
   },
-  "output_dataset_path": "C:\\Users\\86155\\Desktop\\简历\\WikiEvalOps\\.tmp\\pytest-of-86155\\pytest-7\\test_mutate_cli_generates_chal0\\challenge.jsonl",
+  "output_dataset_path": "C:\\Users\\86155\\Desktop\\简历\\WikiEvalOps\\.tmp\\pytest-of-86155\\pytest-8\\test_mutate_cli_generates_chal0\\challenge.jsonl",
   "output_dataset_sha256": "ed4829af86dd62a1b17f425f40f2d95d9da6604f46e8df96d3968f1753d28762",
   "records": [
     {

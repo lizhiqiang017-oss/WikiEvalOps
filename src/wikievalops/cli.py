@@ -10,7 +10,7 @@ from .config import load_config
 from .errors import WikiEvalError
 from .harness import EvaluationHarness
 from .mutation import ChallengeSetBuilder
-from .io import load_artifact, load_challenge_report, load_cases, load_traces, write_json
+from .io import load_artifact, load_challenge_report, load_cases, load_regression_report, load_traces, write_json
 from .reporting import MarkdownReporter
 from .regression import RegressionComparator
 
@@ -51,7 +51,7 @@ def _parser() -> argparse.ArgumentParser:
 
     report = subparsers.add_parser("report", help="把运行产物或挑战集报告导出为 Markdown。")
     report.add_argument("--input", type=Path, required=True, help="输入 JSON 报告文件。")
-    report.add_argument("--kind", choices=("run", "challenge"), required=True, help="输入类型。")
+    report.add_argument("--kind", choices=("run", "challenge", "regression"), required=True, help="输入类型。")
     report.add_argument("--output", type=Path, required=True, help="Markdown 输出路径。")
     return parser
 
@@ -162,8 +162,10 @@ def _report(args: argparse.Namespace) -> int:
     reporter = MarkdownReporter()
     if args.kind == "run":
         report = reporter.render_run(load_artifact(args.input))
-    else:
+    elif args.kind == "challenge":
         report = reporter.render_challenge(load_challenge_report(args.input))
+    else:
+        report = reporter.render_regression(load_regression_report(args.input))
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(report.content + "\n", encoding="utf-8")
     print(json.dumps({"status": "ok", "kind": args.kind, "output": str(args.output.resolve())}, ensure_ascii=False))
