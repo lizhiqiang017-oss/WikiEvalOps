@@ -85,6 +85,16 @@ class MemoryTrace(StrictModel):
     written_items: list[str] = Field(default_factory=list)
 
 
+class UsageTrace(StrictModel):
+    """一次执行中可由被测系统直接观测的资源使用量。"""
+
+    input_tokens: int | None = Field(default=None, ge=0)
+    output_tokens: int | None = Field(default=None, ge=0)
+    tool_call_count: int = Field(default=0, ge=0)
+    retrieval_call_count: int = Field(default=0, ge=0)
+    retry_count: int = Field(default=0, ge=0)
+
+
 class ClaimTrace(StrictModel):
     claim_id: str = Field(min_length=1)
     text: str = Field(min_length=1)
@@ -109,6 +119,7 @@ class EvaluationTrace(StrictModel):
     context: ContextTrace = Field(default_factory=ContextTrace)
     memory: MemoryTrace = Field(default_factory=MemoryTrace)
     generation: GenerationTrace = Field(default_factory=GenerationTrace)
+    usage: UsageTrace = Field(default_factory=UsageTrace)
     timing_ms: dict[str, float] = Field(default_factory=dict)
     cost: dict[str, float] = Field(default_factory=dict)
     errors: list[str] = Field(default_factory=list)
@@ -148,12 +159,14 @@ class RunMetadata(StrictModel):
     dataset_sha256: str
     config_sha256: str
     case_count: int = Field(ge=0)
+    trace_path: str | None = None
+    trace_sha256: str | None = None
 
 
 class RunArtifact(StrictModel):
     """一次评测运行的可复现产物，包含元数据、汇总和逐样本结果。"""
 
-    schema_version: str = "1.0"
+    schema_version: str = "1.1"
     metadata: RunMetadata
     summary: dict[str, Any]
     cases: list[CaseResult]

@@ -2,15 +2,16 @@ from __future__ import annotations
 
 from collections import defaultdict
 from datetime import datetime, timezone
+from math import ceil
 from pathlib import Path
 from uuid import uuid4
 
 from .adapters import SystemAdapter
 from .attribution import AttributionEngine
 from .config import EvaluationConfig
-from .contracts import CaseResult, EvalCase, RunArtifact, RunMetadata
+from .contracts import CaseResult, EvalCase, EvaluationTrace, RunArtifact, RunMetadata
 from .errors import ConfigurationError
-from .io import sha256_file, sha256_json, write_json
+from .io import sha256_file, sha256_json, write_json, write_jsonl
 from .metrics import MetricRegistry
 
 
@@ -33,10 +34,12 @@ class EvaluationHarness:
         adapter: SystemAdapter,
         dataset_path: Path,
         output_path: Path,
+        trace_output_path: Path | None = None,
     ) -> RunArtifact:
-        """执行一次完整评测；同一次运行只允许包含一个系统版本。"""
+        """执行一次完整评测，并可将原始 Trace 单独落盘用于离线复算。"""
 
         case_results: list[CaseResult] = []
+        recorded_traces: list[EvaluationTrace] = []
         system_versions: set[str] = set()
 
         for case in cases:
@@ -57,6 +60,7 @@ class EvaluationHarness:
                     )
                 )
                 continue
+            recorded_traces.append(trace)
             if trace.case_id != case.case_id:
                 case_results.append(
                     CaseResult(
@@ -92,6 +96,16 @@ class EvaluationHarness:
         if len(system_versions) > 1:
             raise ConfigurationError(f"一次运行不能混用多个系统版本：{sorted(system_versions)}")
         system_version = next(iter(system_versions), "unknown")
+        summary = self._summarize(case_results, recorded_traces)
+        quality_gate = self._evaluate_quality_gates(summary)
+        summary["quality_gate"] = quality_gate
+        summary["status"] = quality_gate["status"]
+        trace_path = None
+        trace_sha256 = None
+        if trace_output_path is not None:
+            write_jsonl(trace_output_path, recorded_traces)
+            trace_path = str(trace_output_path.resolve())
+            trace_sha256 = sha256_file(trace_output_path)
         artifact = RunArtifact(
             metadata=RunMetadata(
                 run_id=self._new_run_id(),
@@ -100,8 +114,10 @@ class EvaluationHarness:
                 dataset_sha256=sha256_file(dataset_path),
                 config_sha256=sha256_json(self.config.model_dump(mode="json")),
                 case_count=len(cases),
+                trace_path=trace_path,
+                trace_sha256=trace_sha256,
             ),
-            summary=self._summarize(case_results),
+            summary=summary,
             cases=case_results,
         )
         write_json(output_path, artifact)
@@ -112,7 +128,7 @@ class EvaluationHarness:
         timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         return f"{timestamp}-{uuid4().hex[:8]}"
 
-    def _summarize(self, results: list[CaseResult]) -> dict:
+    def _summarize(self, results: list[CaseResult], traces: list[EvaluationTrace]) -> dict:
         """汇总指标均值、任务切片和失败样本，供报告和 CI 使用。"""
 
         metric_scores: dict[str, list[float]] = defaultdict(list)
@@ -154,15 +170,119 @@ class EvaluationHarness:
         }
         core_metrics = self._core_metrics(results)
         return {
-            "status": "failed"
-            if threshold_failed_cases or (self.config.fail_on_missing_trace and missing_traces)
-            else "passed",
             "metrics": metrics,
             "core_metrics": core_metrics,
             "task_slices": slices,
             "failed_case_ids": sorted(set(failed_cases)),
             "failure_category_counts": dict(sorted(failure_category_counts.items())),
             "missing_or_invalid_trace_count": missing_traces,
+            "threshold_failed_case_count": threshold_failed_cases,
+            "efficiency": self._efficiency_summary(traces),
+        }
+
+    def _evaluate_quality_gates(self, summary: dict) -> dict:
+        """用聚合指标生成 PASS/WARN/BLOCK，避免单一总分掩盖关键风险。"""
+
+        checks = []
+        for metric_name, rule in sorted(self.config.quality_gates.items()):
+            metric_value = summary["core_metrics"].get(metric_name)
+            score_key = "score"
+            if metric_value is None:
+                metric_value = summary["metrics"].get(metric_name)
+                score_key = "mean"
+            if metric_value is None:
+                status = "BLOCK" if rule.required else "WARN"
+                checks.append(
+                    {
+                        "metric": metric_name,
+                        "score": None,
+                        "status": status,
+                        "reason": "运行结果中缺少必需聚合指标" if rule.required else "运行结果中缺少可选聚合指标",
+                    }
+                )
+                continue
+
+            score = float(metric_value[score_key])
+            status = "BLOCK" if score < rule.block_below else "WARN" if score < rule.warn_below else "PASS"
+            checks.append(
+                {
+                    "metric": metric_name,
+                    "score": score,
+                    "status": status,
+                    "warn_below": rule.warn_below,
+                    "block_below": rule.block_below,
+                }
+            )
+
+        missing_count = int(summary["missing_or_invalid_trace_count"])
+        if self.config.fail_on_missing_trace and missing_count:
+            checks.append(
+                {
+                    "metric": "trace_integrity",
+                    "score": None,
+                    "status": "BLOCK",
+                    "reason": f"存在 {missing_count} 条缺失或无效 Trace",
+                }
+            )
+
+        # 兼容尚未迁移 quality_gates 的旧配置，避免升级后静默放过逐样本失败。
+        if not self.config.quality_gates and summary["threshold_failed_case_count"]:
+            checks.append(
+                {
+                    "metric": "case_metric_thresholds",
+                    "score": None,
+                    "status": "BLOCK",
+                    "reason": f"存在 {summary['threshold_failed_case_count']} 条样本未通过指标阈值",
+                }
+            )
+
+        statuses = {check["status"] for check in checks}
+        overall = "BLOCK" if "BLOCK" in statuses else "WARN" if "WARN" in statuses else "PASS"
+        return {"status": overall, "checks": checks}
+
+    @classmethod
+    def _efficiency_summary(cls, traces: list[EvaluationTrace]) -> dict:
+        """汇总真实 Trace 中的延迟、成本和调用次数；缺失字段不做估算。"""
+
+        latencies = [float(trace.timing_ms["total"]) for trace in traces if "total" in trace.timing_ms]
+        usage_fields = ("tool_call_count", "retrieval_call_count", "retry_count")
+        usage = {
+            field: {
+                "total": sum(getattr(trace.usage, field) for trace in traces),
+                "mean": sum(getattr(trace.usage, field) for trace in traces) / len(traces) if traces else 0.0,
+            }
+            for field in usage_fields
+        }
+        cost_values: dict[str, list[float]] = defaultdict(list)
+        for trace in traces:
+            for name, value in trace.cost.items():
+                cost_values[name].append(float(value))
+        costs = {
+            name: {"total": sum(values), "mean": sum(values) / len(values), "count": len(values)}
+            for name, values in sorted(cost_values.items())
+        }
+        return {
+            "evaluated_trace_count": len(traces),
+            "latency_ms": cls._distribution(latencies),
+            "usage": usage,
+            "cost": costs,
+        }
+
+    @staticmethod
+    def _distribution(values: list[float]) -> dict:
+        if not values:
+            return {"count": 0, "mean": None, "p50": None, "p95": None}
+        ordered = sorted(values)
+
+        def percentile(ratio: float) -> float:
+            # 使用 nearest-rank，样本较少时也能给出稳定、易解释的结果。
+            return ordered[max(0, ceil(ratio * len(ordered)) - 1)]
+
+        return {
+            "count": len(ordered),
+            "mean": sum(ordered) / len(ordered),
+            "p50": percentile(0.50),
+            "p95": percentile(0.95),
         }
 
     @staticmethod

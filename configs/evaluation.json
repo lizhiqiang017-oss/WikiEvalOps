@@ -21,6 +21,23 @@
     "risk_label_correctness": 1.0,
     "route_correctness": 0.8,
     "supported_claim_rate": 0.8
+  },
+  "quality_gates": {
+    "evidence_recall_at_5": {
+      "block_below": 0.9,
+      "warn_below": 0.95
+    },
+    "high_risk_recall": {
+      "block_below": 0.95,
+      "warn_below": 1.0
+    },
+    "route_macro_f1": {
+      "block_below": 0.9,
+      "warn_below": 0.95
+    },
+    "supported_claim_rate": {
+      "block_below": 0.9,
+      "warn_below": 0.95
+    }
   }
 }
-

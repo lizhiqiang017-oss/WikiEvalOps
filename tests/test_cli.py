@@ -1,4 +1,5 @@
 from wikievalops.cli import main
+from wikievalops.io import load_traces
 
 
 def test_validate_cli(project_root, capsys):
@@ -24,3 +25,25 @@ def test_run_cli_returns_two_when_thresholds_fail(project_root, tmp_path):
     )
 
     assert exit_code == 2
+
+
+def test_run_reference_cli_writes_replayable_trace(project_root, tmp_path):
+    trace_output = tmp_path / "reference-v2.jsonl"
+    exit_code = main(
+        [
+            "run-reference",
+            "--dataset",
+            str(project_root / "benchmarks/smoke/cases.jsonl"),
+            "--config",
+            str(project_root / "configs/evaluation.json"),
+            "--version",
+            "reference-v2",
+            "--output",
+            str(tmp_path / "artifact.json"),
+            "--trace-output",
+            str(trace_output),
+        ]
+    )
+
+    assert exit_code == 0
+    assert len(load_traces(trace_output)) == 12

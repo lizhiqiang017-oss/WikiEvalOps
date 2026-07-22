@@ -13,6 +13,7 @@ from .contracts import (
     RetrievedDocument,
     RetrievalTrace,
     RouteTrace,
+    UsageTrace,
 )
 
 
@@ -75,6 +76,7 @@ class ReferencePipeline:
             retrieval=RetrievalTrace(documents=documents),
             context=ContextTrace(items=context_items, token_count=sum(len(item.content) for item in context_items)),
             generation=generation,
+            usage=UsageTrace(retrieval_call_count=1),
             timing_ms={"total": elapsed_ms},
         )
 

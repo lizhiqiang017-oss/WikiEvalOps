@@ -28,12 +28,14 @@ def _parser() -> argparse.ArgumentParser:
     run.add_argument("--traces", type=Path, required=True, help="离线 Trace JSONL 路径。")
     run.add_argument("--config", type=Path, required=True, help="评测配置路径。")
     run.add_argument("--output", type=Path, required=True, help="运行产物输出路径。")
+    run.add_argument("--trace-output", type=Path, help="可选：将本次标准 Trace 写入 JSONL。")
 
     reference = subparsers.add_parser("run-reference", help="运行内置 ReferencePipeline。")
     reference.add_argument("--dataset", type=Path, required=True, help="Benchmark JSONL 路径。")
     reference.add_argument("--config", type=Path, required=True, help="评测配置路径。")
     reference.add_argument("--version", choices=("reference-v1", "reference-v2"), required=True)
     reference.add_argument("--output", type=Path, required=True, help="运行产物输出路径。")
+    reference.add_argument("--trace-output", type=Path, help="可选：将本次标准 Trace 写入 JSONL。")
 
     compare = subparsers.add_parser("compare", help="比较 Baseline 与 Candidate Artifact。")
     compare.add_argument("--baseline", type=Path, required=True)
@@ -57,6 +59,7 @@ def _run(args: argparse.Namespace) -> int:
         adapter=OfflineTraceAdapter(traces),
         dataset_path=args.dataset,
         output_path=args.output,
+        trace_output_path=args.trace_output,
     )
     print(
         json.dumps(
@@ -70,7 +73,7 @@ def _run(args: argparse.Namespace) -> int:
             ensure_ascii=False,
         )
     )
-    return 0 if artifact.summary["status"] == "passed" else 2
+    return 2 if artifact.summary["status"] == "BLOCK" else 0
 
 
 def _run_reference(args: argparse.Namespace) -> int:
@@ -81,6 +84,7 @@ def _run_reference(args: argparse.Namespace) -> int:
         adapter=ReferencePipelineAdapter(args.version),
         dataset_path=args.dataset,
         output_path=args.output,
+        trace_output_path=args.trace_output,
     )
     print(
         json.dumps(
@@ -90,11 +94,13 @@ def _run_reference(args: argparse.Namespace) -> int:
                 "artifact": str(args.output.resolve()),
                 "core_metrics": artifact.summary["core_metrics"],
                 "failure_categories": artifact.summary["failure_category_counts"],
+                "quality_gate": artifact.summary["quality_gate"],
+                "trace_output": str(args.trace_output.resolve()) if args.trace_output else None,
             },
             ensure_ascii=False,
         )
     )
-    return 0 if artifact.summary["status"] == "passed" else 2
+    return 2 if artifact.summary["status"] == "BLOCK" else 0
 
 
 def _compare(args: argparse.Namespace) -> int:
