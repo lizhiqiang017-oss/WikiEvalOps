@@ -234,6 +234,40 @@ class ChallengeSetReport(StrictModel):
     records: list[MutationRecord] = Field(default_factory=list)
 
 
+class EvidenceSourceSpec(StrictModel):
+    """描述一类证据来源的治理规则，不存放真实生产数据。"""
+
+    source_id: str = Field(min_length=1)
+    source_type: Literal["code", "document", "system_design", "business_table"]
+    version: str = Field(min_length=1)
+    description: str = Field(min_length=1)
+    allowed_location_kinds: list[Literal["page", "paragraph", "line", "field_path"]]
+
+
+class BenchmarkManifest(StrictModel):
+    """Benchmark 的来源清单，用来说明样本、证据和冻结策略。"""
+
+    schema_version: str = "1.0"
+    benchmark_id: str = Field(min_length=1)
+    dataset_path: str = Field(min_length=1)
+    description: str = Field(min_length=1)
+    frozen_core_policy: str = Field(min_length=1)
+    evidence_sources: list[EvidenceSourceSpec]
+    split_targets: dict[DatasetSplit, int] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def validate_manifest_governance(self) -> "BenchmarkManifest":
+        """校验 Benchmark 治理规则，避免来源清单本身不可审计。"""
+
+        source_ids = [source.source_id for source in self.evidence_sources]
+        if len(source_ids) != len(set(source_ids)):
+            raise ValueError("evidence_sources.source_id 不能重复")
+        invalid_splits = [split.value for split, count in self.split_targets.items() if count < 0]
+        if invalid_splits:
+            raise ValueError(f"split_targets 不能为负数：{invalid_splits}")
+        return self
+
+
 class MarkdownReport(StrictModel):
     """导出的中文 Markdown 报表，便于面试展示和人工审阅。"""
 

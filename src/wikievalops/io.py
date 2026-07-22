@@ -7,7 +7,7 @@ from typing import Iterable, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
-from .contracts import ChallengeSetReport, EvalCase, EvaluationTrace, RegressionReport, RunArtifact
+from .contracts import BenchmarkManifest, ChallengeSetReport, EvalCase, EvaluationTrace, RegressionReport, RunArtifact
 from .errors import DatasetValidationError, TraceValidationError
 
 T = TypeVar("T", bound=BaseModel)
@@ -56,6 +56,17 @@ def _load_jsonl(path: Path, model_type: type[T], error_type: type[Exception]) ->
 
 def load_cases(path: Path) -> list[EvalCase]:
     return _load_jsonl(path, EvalCase, DatasetValidationError)
+
+
+def load_manifest(path: Path) -> BenchmarkManifest:
+    """读取并校验 Benchmark 来源清单。"""
+
+    if not path.is_file():
+        raise DatasetValidationError(f"Manifest 不存在：{path}")
+    try:
+        return BenchmarkManifest.model_validate_json(path.read_text(encoding="utf-8"))
+    except (ValidationError, ValueError) as exc:
+        raise DatasetValidationError(f"Manifest 无效 {path}：{exc}") from exc
 
 
 def load_traces(path: Path) -> dict[str, EvaluationTrace]:

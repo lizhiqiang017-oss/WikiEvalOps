@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "benchmark_id": "smoke-v1",
+  "dataset_path": "benchmarks/smoke/cases.jsonl",
+  "description": "面向企业 Wiki 智能问答、Wiki 生成和电商服务决策的合成评测集。样本只使用公开或自造数据，不包含任何公司内部代码、配置、Prompt 或生产数据。",
+  "frozen_core_policy": "frozen_core 只收录高频稳定场景，样本变更必须经过评审并提升 benchmark 版本号；challenge 可以从线上失败、面试复盘和 mutation testing 中持续演进；holdout 仅用于阶段验收，避免频繁调参造成过拟合。",
+  "evidence_sources": [
+    {
+      "source_id": "public-demo-repo",
+      "source_type": "code",
+      "version": "v1",
+      "description": "公开示例代码仓库，用于模拟 System Wiki 和技术问答中的代码事实、调用链和配置定位。",
+      "allowed_location_kinds": ["line"]
+    },
+    {
+      "source_id": "synthetic-commerce-data",
+      "source_type": "business_table",
+      "version": "v1",
+      "description": "自造电商服务商指标表，用于模拟投诉率、响应时长、履约质量和风险标签等业务决策场景。",
+      "allowed_location_kinds": ["field_path"]
+    },
+    {
+      "source_id": "售后政策.pdf",
+      "source_type": "document",
+      "version": "v1",
+      "description": "合成售后政策文档，用于模拟 File Wiki 摘要、规则抽取、引用页码和段落复验。",
+      "allowed_location_kinds": ["page", "paragraph"]
+    },
+    {
+      "source_id": "工单系统设计.md",
+      "source_type": "system_design",
+      "version": "v1",
+      "description": "合成工单链路设计文档，用于模拟 System Wiki 生成、链路边界和异常处理说明。",
+      "allowed_location_kinds": ["paragraph"]
+    },
+    {
+      "source_id": "服务商评分设计.md",
+      "source_type": "system_design",
+      "version": "v1",
+      "description": "合成服务商评分规则文档，用于模拟电商治理中的多指标约束、风险分层和可解释决策。",
+      "allowed_location_kinds": ["paragraph", "field_path"]
+    }
+  ],
+  "split_targets": {
+    "smoke": 15,
+    "frozen_core": 40,
+    "challenge": 60,
+    "holdout": 20
+  }
+}

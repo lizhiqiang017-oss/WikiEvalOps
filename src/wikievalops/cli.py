@@ -10,7 +10,7 @@ from .config import load_config
 from .errors import WikiEvalError
 from .harness import EvaluationHarness
 from .mutation import ChallengeSetBuilder
-from .io import load_artifact, load_challenge_report, load_cases, load_regression_report, load_traces, write_json
+from .io import load_artifact, load_challenge_report, load_cases, load_manifest, load_regression_report, load_traces, write_json
 from .reporting import MarkdownReporter
 from .regression import RegressionComparator
 
@@ -21,9 +21,9 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="wikieval", description="评测企业知识系统的标准化执行 Trace。")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    validate = subparsers.add_parser("validate", help="校验 JSONL Benchmark 或 Trace 文件。")
+    validate = subparsers.add_parser("validate", help="校验 JSONL Benchmark、Trace 或 Manifest 文件。")
     validate.add_argument("path", type=Path, help="待校验文件路径。")
-    validate.add_argument("--kind", choices=("cases", "traces"), default="cases", help="文件类型。")
+    validate.add_argument("--kind", choices=("cases", "traces", "manifest"), default="cases", help="文件类型。")
 
     run = subparsers.add_parser("run", help="使用离线 Trace 执行 Benchmark。")
     run.add_argument("--dataset", type=Path, required=True, help="Benchmark JSONL 路径。")
@@ -57,8 +57,21 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def _validate(args: argparse.Namespace) -> int:
-    records = load_cases(args.path) if args.kind == "cases" else load_traces(args.path)
-    print(json.dumps({"status": "valid", "kind": args.kind, "record_count": len(records)}, ensure_ascii=False))
+    if args.kind == "cases":
+        records = load_cases(args.path)
+        payload = {"status": "valid", "kind": args.kind, "record_count": len(records)}
+    elif args.kind == "traces":
+        records = load_traces(args.path)
+        payload = {"status": "valid", "kind": args.kind, "record_count": len(records)}
+    else:
+        manifest = load_manifest(args.path)
+        payload = {
+            "status": "valid",
+            "kind": args.kind,
+            "benchmark_id": manifest.benchmark_id,
+            "source_count": len(manifest.evidence_sources),
+        }
+    print(json.dumps(payload, ensure_ascii=False))
     return 0
 
 

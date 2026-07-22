@@ -1,0 +1,22 @@
+{
+  "benchmark_id": "bad",
+  "dataset_path": "benchmarks/smoke/cases.jsonl",
+  "description": "重复来源示例",
+  "frozen_core_policy": "示例策略",
+  "evidence_sources": [
+    {
+      "source_id": "same",
+      "source_type": "document",
+      "version": "v1",
+      "description": "来源 A",
+      "allowed_location_kinds": ["page"]
+    },
+    {
+      "source_id": "same",
+      "source_type": "document",
+      "version": "v1",
+      "description": "来源 B",
+      "allowed_location_kinds": ["paragraph"]
+    }
+  ]
+}

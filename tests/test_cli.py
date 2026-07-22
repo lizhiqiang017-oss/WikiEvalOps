@@ -9,6 +9,15 @@ def test_validate_cli(project_root, capsys):
     assert '"record_count": 15' in capsys.readouterr().out
 
 
+def test_validate_manifest_cli(project_root, capsys):
+    exit_code = main(["validate", str(project_root / "benchmarks/smoke/manifest.json"), "--kind", "manifest"])
+
+    assert exit_code == 0
+    output = capsys.readouterr().out
+    assert '"benchmark_id": "smoke-v1"' in output
+    assert '"source_count": 5' in output
+
+
 def test_run_cli_returns_two_when_thresholds_fail(project_root, tmp_path):
     exit_code = main(
         [

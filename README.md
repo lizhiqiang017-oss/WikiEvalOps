@@ -56,6 +56,7 @@ python -m pip install -e ".[dev]"
 ```powershell
 wikieval validate benchmarks/smoke/cases.jsonl
 wikieval validate examples/traces/reference-v1.jsonl --kind traces
+wikieval validate benchmarks/smoke/manifest.json --kind manifest
 ```
 
 如果只进行仓库内开发、暂时不安装命令行入口，可以设置 `PYTHONPATH=src` 后使用模块方式运行。pytest 已在 `pyproject.toml` 中配置好 `src` 路径。
@@ -263,6 +264,24 @@ wikieval report `
 - 失败类别的变化。
 
 这样就把评测、挑战集、版本对比三条线都收口到了统一的中文报表出口。
+
+## 第九轮：Benchmark 来源治理
+
+第九轮补上 `benchmarks/smoke/manifest.json`，用机器可校验的方式说明评测集从哪里来、哪些来源可以被引用、哪些样本分层应该冻结。这个文件解决的是工业评测里很常见的问题：只看分数不够，还要能解释 Benchmark 是否可信、是否混入了生产数据、是否因为频繁修改样本而过拟合。
+
+Manifest 目前记录四类信息：
+
+- `benchmark_id` 和 `dataset_path`：明确本次评测集身份和对应 JSONL 文件；
+- `evidence_sources`：声明代码、文档、系统设计和业务表等证据来源；
+- `allowed_location_kinds`：限制不同来源允许使用的可复验定位方式，例如代码只能用 `line`，业务表用 `field_path`；
+- `frozen_core_policy` 和 `split_targets`：说明核心回归集、挑战集和留出集的演进策略。
+
+校验命令：
+```powershell
+wikieval validate benchmarks/smoke/manifest.json --kind manifest
+```
+
+这一轮的面试表达重点是：我没有把评测数据当作随手写的样例，而是把它当作一个需要治理的产品资产。核心集稳定、挑战集演进、留出集验收，才能同时兼顾线上问题发现和版本回归可信度。
 
 ## 后续实现计划
 

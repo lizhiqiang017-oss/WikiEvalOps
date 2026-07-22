@@ -541,88 +541,23 @@
     },
     {
       "attribution": {
-        "evidence": [],
-        "primary_failure": null,
-        "recommendation": null,
+        "evidence": [
+          "trace_status=missing"
+        ],
+        "primary_failure": "trace_missing",
+        "recommendation": "检查 Trace 采集链路、case_id 关联和任务执行状态。",
         "secondary_failures": []
       },
       "case_id": "qa-003",
       "dataset_split": "smoke",
-      "errors": [],
-      "knowledge_base_type": "fact_wiki",
-      "metric_results": [
-        {
-          "details": {
-            "expected": [
-              "technical_qa"
-            ],
-            "precision": 1.0,
-            "recall": 1.0,
-            "selected": [
-              "technical_qa"
-            ]
-          },
-          "metric": "route_correctness",
-          "passed": true,
-          "score": 1.0
-        },
-        {
-          "details": {
-            "expected": [
-              "fact:service-storage-edge"
-            ],
-            "missing": [],
-            "retrieved_top_5": [
-              "fact:service-storage-edge"
-            ]
-          },
-          "metric": "evidence_recall_at_5",
-          "passed": true,
-          "score": 1.0
-        },
-        {
-          "details": {
-            "available_evidence": [
-              "fact:service-storage-edge"
-            ],
-            "claim_count": 1,
-            "supported_claims": [
-              "service-storage"
-            ],
-            "unsupported_claims": []
-          },
-          "metric": "supported_claim_rate",
-          "passed": true,
-          "score": 1.0
-        },
-        {
-          "details": {
-            "cited_ids": [
-              "fact:service-storage-edge"
-            ],
-            "unverifiable_ids": [],
-            "verifiable_ids": [
-              "fact:service-storage-edge"
-            ]
-          },
-          "metric": "citation_verifiability",
-          "passed": true,
-          "score": 1.0
-        },
-        {
-          "details": {
-            "checked_evidence_ids": [],
-            "missing_location_kinds": {},
-            "passed_evidence_ids": []
-          },
-          "metric": "evidence_location_coverage",
-          "passed": true,
-          "score": 1.0
-        }
+      "errors": [
+        "未找到对应 Trace"
       ],
+      "knowledge_base_type": "fact_wiki",
+      "metric_results": [],
       "risk_level": "medium",
       "task_type": "technical_qa",
-      "trace_status": "ok"
+      "trace_status": "missing"
     },
     {
       "attribution": {
@@ -1242,10 +1177,10 @@
   "metadata": {
     "case_count": 15,
     "config_sha256": "037d63b266f65b84a15ca2c026c4f2696220bee13306dd0c2282e9efe8e305b3",
-    "created_at": "2026-07-22T07:19:09.539058Z",
+    "created_at": "2026-07-22T07:59:48.772848Z",
     "dataset_path": "C:\\Users\\86155\\Desktop\\简历\\WikiEvalOps\\benchmarks\\smoke\\cases.jsonl",
     "dataset_sha256": "ba76501a07ad869054d8d60c2ef1785387ff761dba017bfea2823fc44554c9cd",
-    "run_id": "20260722T071909Z-f3fd03ba",
+    "run_id": "20260722T075948Z-b71ae534",
     "system_version": "reference-v1",
     "trace_path": null,
     "trace_sha256": null
@@ -1259,7 +1194,7 @@
       },
       "route_macro_f1": {
         "label_count": 5,
-        "score": 0.9818181818181818
+        "score": 0.9777777777777779
       }
     },
     "dataset_split_slices": {
@@ -1337,44 +1272,44 @@
           "mean": 1.0
         },
         "citation_verifiability": {
-          "count": 4,
-          "mean": 0.75
+          "count": 3,
+          "mean": 0.6666666666666666
         },
         "evidence_location_coverage": {
-          "count": 7,
-          "mean": 0.8571428571428571
+          "count": 6,
+          "mean": 0.8333333333333334
         },
         "evidence_recall_at_5": {
-          "count": 7,
-          "mean": 0.8571428571428571
+          "count": 6,
+          "mean": 0.8333333333333334
         },
         "risk_label_correctness": {
           "count": 3,
           "mean": 1.0
         },
         "route_correctness": {
-          "count": 10,
-          "mean": 0.9666666666666666
+          "count": 9,
+          "mean": 0.9629629629629629
         },
         "supported_claim_rate": {
-          "count": 7,
-          "mean": 0.8571428571428571
+          "count": 6,
+          "mean": 0.8333333333333334
         }
       }
     },
     "efficiency": {
       "cost": {},
-      "evaluated_trace_count": 15,
+      "evaluated_trace_count": 14,
       "latency_ms": {
-        "count": 15,
-        "mean": 0.18113999782751003,
+        "count": 14,
+        "mean": 0.1913785734879119,
         "p50": 0.0475000124424696,
         "p95": 1.91730004735291
       },
       "usage": {
         "retrieval_call_count": {
           "mean": 1.0,
-          "total": 15
+          "total": 14
         },
         "retry_count": {
           "mean": 0.0,
@@ -1388,6 +1323,7 @@
     },
     "failed_case_ids": [
       "qa-002",
+      "qa-003",
       "risk-003",
       "risk-005",
       "route-002",
@@ -1398,7 +1334,8 @@
     "failure_category_counts": {
       "business_decision_error": 1,
       "retrieval_miss": 1,
-      "route_mismatch": 1
+      "route_mismatch": 1,
+      "trace_missing": 1
     },
     "knowledge_base_slices": {
       "commerce": {
@@ -1433,28 +1370,28 @@
           "mean": 1.0
         },
         "citation_verifiability": {
-          "count": 5,
-          "mean": 0.8
+          "count": 4,
+          "mean": 0.75
         },
         "evidence_location_coverage": {
-          "count": 8,
-          "mean": 0.875
+          "count": 7,
+          "mean": 0.8571428571428571
         },
         "evidence_recall_at_5": {
-          "count": 8,
-          "mean": 0.875
+          "count": 7,
+          "mean": 0.8571428571428571
         },
         "risk_label_correctness": {
           "count": 3,
           "mean": 1.0
         },
         "route_correctness": {
-          "count": 11,
-          "mean": 0.9696969696969696
+          "count": 10,
+          "mean": 0.9666666666666666
         },
         "supported_claim_rate": {
-          "count": 7,
-          "mean": 0.8571428571428571
+          "count": 6,
+          "mean": 0.8333333333333334
         },
         "wiki_structure_completeness": {
           "count": 1,
@@ -1512,35 +1449,35 @@
         "mean": 0.7
       },
       "citation_verifiability": {
-        "count": 7,
-        "mean": 0.7142857142857143
+        "count": 6,
+        "mean": 0.6666666666666666
       },
       "evidence_location_coverage": {
-        "count": 12,
-        "mean": 0.9166666666666666
+        "count": 11,
+        "mean": 0.9090909090909091
       },
       "evidence_recall_at_5": {
-        "count": 12,
-        "mean": 0.9166666666666666
+        "count": 11,
+        "mean": 0.9090909090909091
       },
       "risk_label_correctness": {
         "count": 5,
         "mean": 0.8
       },
       "route_correctness": {
-        "count": 15,
-        "mean": 0.9777777777777777
+        "count": 14,
+        "mean": 0.9761904761904762
       },
       "supported_claim_rate": {
-        "count": 9,
-        "mean": 0.8888888888888888
+        "count": 8,
+        "mean": 0.875
       },
       "wiki_structure_completeness": {
         "count": 3,
         "mean": 0.6944444444444443
       }
     },
-    "missing_or_invalid_trace_count": 0,
+    "missing_or_invalid_trace_count": 1,
     "quality_gate": {
       "checks": [
         {
@@ -1553,21 +1490,21 @@
         {
           "block_below": 0.95,
           "metric": "citation_verifiability",
-          "score": 0.7142857142857143,
+          "score": 0.6666666666666666,
           "status": "BLOCK",
           "warn_below": 1.0
         },
         {
           "block_below": 0.95,
           "metric": "evidence_location_coverage",
-          "score": 0.9166666666666666,
+          "score": 0.9090909090909091,
           "status": "BLOCK",
           "warn_below": 1.0
         },
         {
           "block_below": 0.9,
           "metric": "evidence_recall_at_5",
-          "score": 0.9166666666666666,
+          "score": 0.9090909090909091,
           "status": "WARN",
           "warn_below": 0.95
         },
@@ -1581,14 +1518,14 @@
         {
           "block_below": 0.9,
           "metric": "route_macro_f1",
-          "score": 0.9818181818181818,
+          "score": 0.9777777777777779,
           "status": "PASS",
           "warn_below": 0.95
         },
         {
           "block_below": 0.9,
           "metric": "supported_claim_rate",
-          "score": 0.8888888888888888,
+          "score": 0.875,
           "status": "BLOCK",
           "warn_below": 0.95
         },
@@ -1598,6 +1535,12 @@
           "score": 0.6944444444444443,
           "status": "BLOCK",
           "warn_below": 1.0
+        },
+        {
+          "metric": "trace_integrity",
+          "reason": "存在 1 条缺失或无效 Trace",
+          "score": null,
+          "status": "BLOCK"
         }
       ],
       "status": "BLOCK"
@@ -1704,24 +1647,24 @@
       },
       "technical_qa": {
         "citation_verifiability": {
-          "count": 4,
-          "mean": 0.75
+          "count": 3,
+          "mean": 0.6666666666666666
         },
         "evidence_location_coverage": {
-          "count": 4,
-          "mean": 0.75
+          "count": 3,
+          "mean": 0.6666666666666666
         },
         "evidence_recall_at_5": {
-          "count": 4,
-          "mean": 0.75
+          "count": 3,
+          "mean": 0.6666666666666666
         },
         "route_correctness": {
-          "count": 4,
+          "count": 3,
           "mean": 1.0
         },
         "supported_claim_rate": {
-          "count": 4,
-          "mean": 0.75
+          "count": 3,
+          "mean": 0.6666666666666666
         }
       }
     },
