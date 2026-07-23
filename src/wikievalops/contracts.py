@@ -174,6 +174,53 @@ class FailureAttribution(StrictModel):
     recommendation: str | None = None
 
 
+class FailurePattern(StrictModel):
+    """从失败样本中聚合出的失败模式，用于驱动评测集演进。"""
+
+    pattern_id: str = Field(min_length=1)
+    failure_type: str = Field(min_length=1)
+    severity: Literal["low", "medium", "high"]
+    case_count: int = Field(ge=0)
+    case_ids: list[str] = Field(default_factory=list)
+    evidence: list[str] = Field(default_factory=list)
+    suggested_action: str = Field(min_length=1)
+
+
+class EvalEvolutionCandidate(StrictModel):
+    """评测自进化候选项；默认需要人工 review 后才能进入正式 Benchmark。"""
+
+    candidate_id: str = Field(min_length=1)
+    source_case_ids: list[str] = Field(default_factory=list)
+    candidate_type: Literal[
+        "add_challenge_case",
+        "promote_to_frozen_core",
+        "add_metric_to_profile",
+        "raise_quality_gate",
+        "needs_human_review",
+    ]
+    target_split: DatasetSplit | None = None
+    review_status: Literal["pending_review", "approved", "rejected"] = "pending_review"
+    reason: str = Field(min_length=1)
+    suggested_change: dict[str, Any] = Field(default_factory=dict)
+
+
+class EvalEvolutionReport(StrictModel):
+    """单轮评测后的演进建议报告，只提出候选项，不直接修改 Benchmark。"""
+
+    schema_version: str = "1.0"
+    source_run_id: str = Field(min_length=1)
+    source_system_version: str = Field(min_length=1)
+    source_dataset_path: str = Field(min_length=1)
+    source_dataset_sha256: str = Field(min_length=1)
+    case_count: int = Field(ge=0)
+    status: Literal["ok", "review_required"]
+    failure_pattern_count: int = Field(ge=0)
+    candidate_count: int = Field(ge=0)
+    failure_patterns: list[FailurePattern] = Field(default_factory=list)
+    candidates: list[EvalEvolutionCandidate] = Field(default_factory=list)
+    summary: dict[str, Any] = Field(default_factory=dict)
+
+
 class CaseResult(StrictModel):
     case_id: str
     task_type: str

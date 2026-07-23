@@ -8,6 +8,7 @@ from pathlib import Path
 from .adapters import OfflineTraceAdapter, ReferencePipelineAdapter
 from .config import load_config
 from .errors import WikiEvalError
+from .evolution import EvalEvolutionPlanner
 from .harness import EvaluationHarness
 from .mutation import ChallengeSetBuilder
 from .io import load_artifact, load_challenge_report, load_cases, load_manifest, load_regression_report, load_traces, write_json
@@ -48,6 +49,10 @@ def _parser() -> argparse.ArgumentParser:
     mutate.add_argument("--dataset", type=Path, required=True, help="Benchmark JSONL 路径。")
     mutate.add_argument("--output", type=Path, required=True, help="挑战集 JSONL 输出路径。")
     mutate.add_argument("--report", type=Path, required=True, help="mutation 报告输出路径。")
+
+    evolve = subparsers.add_parser("evolve", help="根据失败归因生成 Eval 自进化候选建议。")
+    evolve.add_argument("--artifact", type=Path, required=True, help="评测运行 Artifact 路径。")
+    evolve.add_argument("--output", type=Path, required=True, help="Evolution 建议报告输出路径。")
 
     report = subparsers.add_parser("report", help="把运行产物或挑战集报告导出为 Markdown。")
     report.add_argument("--input", type=Path, required=True, help="输入 JSON 报告文件。")
@@ -171,6 +176,24 @@ def _mutate(args: argparse.Namespace) -> int:
     return 0
 
 
+def _evolve(args: argparse.Namespace) -> int:
+    report = EvalEvolutionPlanner().plan(load_artifact(args.artifact))
+    write_json(args.output, report)
+    print(
+        json.dumps(
+            {
+                "status": report.status,
+                "source_run_id": report.source_run_id,
+                "failure_pattern_count": report.failure_pattern_count,
+                "candidate_count": report.candidate_count,
+                "output": str(args.output.resolve()),
+            },
+            ensure_ascii=False,
+        )
+    )
+    return 0
+
+
 def _report(args: argparse.Namespace) -> int:
     reporter = MarkdownReporter()
     if args.kind == "run":
@@ -196,6 +219,8 @@ def main(argv: list[str] | None = None) -> int:
             return _run_reference(args)
         if args.command == "mutate":
             return _mutate(args)
+        if args.command == "evolve":
+            return _evolve(args)
         if args.command == "report":
             return _report(args)
         return _compare(args)

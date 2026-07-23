@@ -1,0 +1,152 @@
+{
+  "candidate_count": 5,
+  "candidates": [
+    {
+      "candidate_id": "candidate-business_decision_error-review",
+      "candidate_type": "add_challenge_case",
+      "reason": "生成电商服务边界样本，覆盖多指标共同恶化场景。",
+      "review_status": "pending_review",
+      "source_case_ids": [
+        "risk-003"
+      ],
+      "suggested_change": {
+        "case_count": 1,
+        "failure_type": "business_decision_error",
+        "mutation_focus": "business_boundary_rules"
+      },
+      "target_split": "challenge"
+    },
+    {
+      "candidate_id": "candidate-business_decision_error-frozen-core",
+      "candidate_type": "promote_to_frozen_core",
+      "reason": "高风险失败样本建议经 review 后进入 frozen_core。",
+      "review_status": "pending_review",
+      "source_case_ids": [
+        "risk-003"
+      ],
+      "suggested_change": {
+        "failure_type": "business_decision_error",
+        "risk_policy": "protect_high_risk_regression"
+      },
+      "target_split": "frozen_core"
+    },
+    {
+      "candidate_id": "candidate-retrieval_miss-review",
+      "candidate_type": "add_challenge_case",
+      "reason": "生成同义改写、证据稀疏和跨知识库 challenge case。",
+      "review_status": "pending_review",
+      "source_case_ids": [
+        "qa-002"
+      ],
+      "suggested_change": {
+        "case_count": 1,
+        "failure_type": "retrieval_miss",
+        "mutation_focus": "retrieval_recall"
+      },
+      "target_split": "challenge"
+    },
+    {
+      "candidate_id": "candidate-route_mismatch-review",
+      "candidate_type": "add_challenge_case",
+      "reason": "生成多意图、干扰意图和边界路由 challenge case。",
+      "review_status": "pending_review",
+      "source_case_ids": [
+        "route-002"
+      ],
+      "suggested_change": {
+        "case_count": 1,
+        "failure_type": "route_mismatch",
+        "mutation_focus": "multi_intent_routing"
+      },
+      "target_split": "challenge"
+    },
+    {
+      "candidate_id": "candidate-unsupported_generation-review",
+      "candidate_type": "raise_quality_gate",
+      "reason": "将证据绑定和引用可复验作为生成链路门禁候选。",
+      "review_status": "pending_review",
+      "source_case_ids": [
+        "qa-002"
+      ],
+      "suggested_change": {
+        "case_count": 1,
+        "failure_type": "unsupported_generation",
+        "gate_metric": "supported_claim_rate"
+      },
+      "target_split": null
+    }
+  ],
+  "case_count": 15,
+  "failure_pattern_count": 4,
+  "failure_patterns": [
+    {
+      "case_count": 1,
+      "case_ids": [
+        "risk-003"
+      ],
+      "evidence": [
+        "期望风险=high，实际风险=medium"
+      ],
+      "failure_type": "business_decision_error",
+      "pattern_id": "pattern-business_decision_error",
+      "severity": "high",
+      "suggested_action": "生成电商服务边界样本，覆盖多指标共同恶化场景。"
+    },
+    {
+      "case_count": 1,
+      "case_ids": [
+        "qa-002"
+      ],
+      "evidence": [
+        "Top-5 缺失证据=['fact:service-storage-edge']",
+        "无有效证据结论=['guess']"
+      ],
+      "failure_type": "retrieval_miss",
+      "pattern_id": "pattern-retrieval_miss",
+      "severity": "high",
+      "suggested_action": "生成同义改写、证据稀疏和跨知识库 challenge case。"
+    },
+    {
+      "case_count": 1,
+      "case_ids": [
+        "route-002"
+      ],
+      "evidence": [
+        "期望路由=['commerce_risk', 'technical_qa']，实际路由=['commerce_risk']"
+      ],
+      "failure_type": "route_mismatch",
+      "pattern_id": "pattern-route_mismatch",
+      "severity": "medium",
+      "suggested_action": "生成多意图、干扰意图和边界路由 challenge case。"
+    },
+    {
+      "case_count": 1,
+      "case_ids": [
+        "qa-002"
+      ],
+      "evidence": [
+        "Top-5 缺失证据=['fact:service-storage-edge']",
+        "无有效证据结论=['guess']"
+      ],
+      "failure_type": "unsupported_generation",
+      "pattern_id": "pattern-unsupported_generation",
+      "severity": "high",
+      "suggested_action": "将证据绑定和引用可复验作为生成链路门禁候选。"
+    }
+  ],
+  "schema_version": "1.0",
+  "source_dataset_path": "C:\\Users\\86155\\Desktop\\简历\\WikiEvalOps\\benchmarks\\smoke\\cases.jsonl",
+  "source_dataset_sha256": "ba76501a07ad869054d8d60c2ef1785387ff761dba017bfea2823fc44554c9cd",
+  "source_run_id": "20260722T070120Z-15f459e8",
+  "source_system_version": "reference-v1",
+  "status": "review_required",
+  "summary": {
+    "review_policy": "候选项默认 pending_review，不自动写入 Benchmark、Gold Label 或质量门禁。",
+    "top_failure_types": {
+      "business_decision_error": 1,
+      "retrieval_miss": 1,
+      "route_mismatch": 1,
+      "unsupported_generation": 1
+    }
+  }
+}

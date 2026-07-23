@@ -1,6 +1,7 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.pytest-tmp/
 .coverage
 htmlcov/
 .venv/
@@ -8,4 +9,3 @@ dist/
 build/
 *.egg-info/
 artifacts/runs/
-

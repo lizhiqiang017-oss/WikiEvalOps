@@ -1,5 +1,5 @@
 from wikievalops.cli import main
-from wikievalops.io import load_cases, load_traces
+from wikievalops.io import load_cases, load_evolution_report, load_traces
 
 
 def test_validate_cli(project_root, capsys):
@@ -79,6 +79,24 @@ def test_mutate_cli_generates_challenge_set(project_root, tmp_path):
     assert len(challenge_cases) == 15
     assert all(case.dataset_split == "challenge" for case in challenge_cases)
     assert challenge_cases[0].case_id.startswith("challenge-")
+
+
+def test_evolve_cli_writes_review_report(project_root, tmp_path, capsys):
+    output = tmp_path / "evolution-report.json"
+    exit_code = main(
+        [
+            "evolve",
+            "--artifact",
+            str(project_root / "artifacts/runs/round5-reference-v1.json"),
+            "--output",
+            str(output),
+        ]
+    )
+
+    assert exit_code == 0
+    assert '"status": "review_required"' in capsys.readouterr().out
+    report = load_evolution_report(output)
+    assert report.candidate_count >= 1
 
 
 def test_report_cli_renders_run_markdown(project_root, tmp_path):

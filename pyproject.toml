@@ -20,6 +20,6 @@ wikieval = "wikievalops.cli:main"
 where = ["src"]
 
 [tool.pytest.ini_options]
-addopts = "-q"
+addopts = "-q --basetemp=.pytest-tmp"
 pythonpath = ["src"]
 testpaths = ["tests"]

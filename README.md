@@ -283,6 +283,40 @@ wikieval validate benchmarks/smoke/manifest.json --kind manifest
 
 这一轮的面试表达重点是：我没有把评测数据当作随手写的样例，而是把它当作一个需要治理的产品资产。核心集稳定、挑战集演进、留出集验收，才能同时兼顾线上问题发现和版本回归可信度。
 
+## 第十一轮：Eval 轻量自进化
+
+第十一轮增加 `evolve` 命令，把失败样本转化为下一轮评测建设建议。它采用“失败驱动分析 + 人工审核准入”的轻量方案：
+
+```text
+Run Artifact
+    -> 失败归因
+    -> 失败模式聚类
+    -> 生成候选变更
+    -> 人工 Review
+    -> Challenge / Frozen Core / Quality Gate
+```
+
+运行命令：
+
+```powershell
+wikieval evolve `
+  --artifact artifacts/runs/round5-reference-v1.json `
+  --output artifacts/evolution/round11-evolution-report.json
+```
+
+当前会识别路由错误、检索遗漏、证据不足生成、电商决策错误、上下文组装丢失和 Trace 异常等失败模式，并生成以下候选动作：
+
+- 将失败模式变成 `challenge` 样本；
+- 将高风险失败样本候选晋升到 `frozen_core`；
+- 将证据支持率等关键指标提升为质量门禁候选；
+- 对 Trace 缺失或协议异常生成待人工排查项。
+
+所有候选默认是 `pending_review`，不会自动修改 Benchmark、Gold Label 或质量门禁配置。这样可以避免评测集污染、错误 Gold Label 扩散和针对单次失败过拟合，同时保留评测体系持续吸收线上问题的能力。
+
+面试中可以这样概括：
+
+> 我设计了 failure-driven、review-gated 的 Eval 轻量自进化机制，从失败 Trace 中聚类失败模式并生成 challenge case、frozen core 和质量门禁候选；但不自动写入正式评测集，保证 Benchmark 的可信性、可回滚性和审计性。
+
 ## 后续实现计划
 
 第二轮已经完成 Reference Pipeline v1/v2、规则优先的阶段级错误归因，以及 Baseline/Candidate 版本对比。
